@@ -10,11 +10,13 @@ import (
 	"time"
 
 	deliveryhttp "frontend-challenge/internal/delivery/http"
+	"frontend-challenge/internal/delivery/http/middleware"
 	"frontend-challenge/internal/delivery/websocket"
 	"frontend-challenge/internal/infrastructure/repository"
 	"frontend-challenge/internal/usecase"
 	"frontend-challenge/pkg/config"
 	"frontend-challenge/pkg/logger"
+	"frontend-challenge/pkg/security"
 
 	"github.com/brianvoe/gofakeit/v5"
 )
@@ -26,13 +28,39 @@ func main() {
 	// Inicializar logger
 	logger := logger.NewSimpleLogger()
 
+	// Inicializar logger de seguridad
+	securityLogger, err := security.NewSecurityLogger("logs/security.log")
+	if err != nil {
+		logger.Error("Error al crear logger de seguridad", err)
+		os.Exit(1)
+	}
+	defer securityLogger.Close()
+
+	// Inicializar monitoreo de amenazas
+	threatMonitor := security.NewThreatMonitor(securityLogger)
+
+	// Inicializar rotación de logs
+	logRotator := security.NewLogRotator("logs", 10, 10*1024*1024, true) // 10 archivos, 10MB, rotación diaria
+	go func() {
+		ticker := time.NewTicker(time.Hour)
+		defer ticker.Stop()
+		for range ticker.C {
+			if err := logRotator.RotateLogs(); err != nil {
+				logger.Error("Error al rotar logs", err)
+			}
+		}
+	}()
+
 	// Inicializar generadores de datos aleatorios
 	seed := time.Now().UnixNano()
 	rand.Seed(seed)
 	gofakeit.Seed(seed)
 
+	// Inicializar cache
+	cache := repository.NewMemoryCache(24 * time.Hour) // TTL de 24 horas
+
 	// Inicializar repositorios
-	documentRepo := repository.NewDocumentRepositoryImpl()
+	documentRepo := repository.NewDocumentRepositoryImpl(cache)
 	userRepo := repository.NewUserRepositoryImpl()
 	notificationRepo := repository.NewNotificationRepositoryImpl()
 
@@ -44,10 +72,53 @@ func main() {
 	documentHandler := deliveryhttp.NewDocumentHandler(documentUsecase)
 	notificationHandler := websocket.NewNotificationHandler(notificationUsecase)
 
-	// Configurar rutas
+	// Configurar middlewares de seguridad
+	rateLimiter := middleware.NewRateLimiter(100, time.Minute)      // 100 requests por minuto
+	requestValidator := middleware.NewRequestValidator(1024 * 1024) // 1MB máximo
+	securityHeaders := middleware.NewSecurityHeaders(true)          // Habilitar CSP
+	securityHandler := deliveryhttp.NewSecurityHandler(threatMonitor, rateLimiter, logRotator, cache)
+
+	// Configurar rutas con middlewares
 	mux := http.NewServeMux()
-	mux.HandleFunc("/documents", documentHandler.GetDocuments)
-	mux.HandleFunc("/notifications", notificationHandler.HandleNotifications)
+
+	// Aplicar middlewares en orden
+	handler := rateLimiter.Middleware(
+		requestValidator.Middleware(
+			securityHeaders.Middleware(
+				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					// Monitoreo de amenazas
+					if threatMonitor.AnalyzeRequest(r) {
+						http.Error(w, "Access denied", http.StatusForbidden)
+						return
+					}
+
+					// Enrutar peticiones
+					switch r.URL.Path {
+					case "/documents":
+						switch r.Method {
+						case "GET":
+							documentHandler.GetDocuments(w, r)
+						case "POST":
+							documentHandler.CreateDocument(w, r)
+						default:
+							http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+						}
+					case "/notifications":
+						notificationHandler.HandleNotifications(w, r)
+					case "/security/stats":
+						securityHandler.GetSecurityStats(w, r)
+					case "/health":
+						w.WriteHeader(http.StatusOK)
+						w.Write([]byte("OK"))
+					default:
+						http.NotFound(w, r)
+					}
+				}),
+			),
+		),
+	)
+
+	mux.Handle("/", handler)
 
 	// Configurar servidor
 	server := &http.Server{
