@@ -69,8 +69,8 @@ func main() {
 	notificationUsecase := usecase.NewNotificationUsecase(notificationRepo, documentRepo, userRepo)
 
 	// Inicializar handlers
-	documentHandler := deliveryhttp.NewDocumentHandler(documentUsecase)
 	notificationHandler := websocket.NewNotificationHandler(notificationUsecase)
+	documentHandler := deliveryhttp.NewDocumentHandler(documentUsecase).WithNotifier(notificationHandler.Hub())
 
 	// Configurar middlewares de seguridad
 	rateLimiter := middleware.NewRateLimiter(100, time.Minute)      // 100 requests por minuto
@@ -99,7 +99,14 @@ func main() {
 						case "GET":
 							documentHandler.GetDocuments(w, r)
 						case "POST":
+							if r.Header.Get("Authorization") == "" {
+								http.Error(w, "Authorization header is required", http.StatusBadRequest)
+								return
+							}
+
 							documentHandler.CreateDocument(w, r)
+							// Emisión opcional desde aquí si tuviésemos datos de usuario
+							// hub.BroadcastNotification(...)
 						default:
 							http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
 						}

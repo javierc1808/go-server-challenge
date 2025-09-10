@@ -17,6 +17,7 @@ import (
 type NotificationHandler struct {
 	notificationUsecase *usecase.NotificationUsecase
 	upgrader            websocket.Upgrader
+	hub                 *Hub
 }
 
 // NewNotificationHandler crea una nueva instancia de NotificationHandler
@@ -29,8 +30,12 @@ func NewNotificationHandler(notificationUsecase *usecase.NotificationUsecase) *N
 				return true
 			},
 		},
+		hub: NewHub(),
 	}
 }
+
+// Hub expone el hub para inyectarlo si fuese necesario
+func (h *NotificationHandler) Hub() *Hub { return h.hub }
 
 // HandleNotifications maneja las conexiones WebSocket para notificaciones
 func (h *NotificationHandler) HandleNotifications(w http.ResponseWriter, r *http.Request) {
@@ -46,16 +51,27 @@ func (h *NotificationHandler) HandleNotifications(w http.ResponseWriter, r *http
 		log.Printf("Error upgrading connection: %v", err)
 		return
 	}
-	defer conn.Close()
 
-	// Enviar notificaciones en tiempo real
-	h.sendNotifications(conn)
+	h.hub.Register(conn)
+	defer func() {
+		h.hub.Unregister(conn)
+		conn.Close()
+	}()
+
+	// Si no vamos a emitir desde el servidor, mantener un fallback de fake
+	// go h.fallbackFakeNotifications(conn)
+
+	// Mantener la conexión abierta mientras el cliente no cierre
+	for {
+		if _, _, err := conn.ReadMessage(); err != nil {
+			break
+		}
+	}
 }
 
-// sendNotifications envía notificaciones simuladas
-func (h *NotificationHandler) sendNotifications(conn *websocket.Conn) {
+// fallbackFakeNotifications envía notificaciones simuladas
+func (h *NotificationHandler) fallbackFakeNotifications(conn *websocket.Conn) {
 	for {
-		// Crear notificación simulada
 		notification := entity.NewNotification(
 			gofakeit.UUID(),
 			gofakeit.Name(),
@@ -63,13 +79,10 @@ func (h *NotificationHandler) sendNotifications(conn *websocket.Conn) {
 			gofakeit.BeerName(),
 		)
 
-		// Enviar notificación al cliente
 		if err := conn.WriteJSON(notification); err != nil {
-			log.Printf("Error writing to websocket: %v", err)
 			break
 		}
 
-		// Esperar un tiempo aleatorio antes de la siguiente notificación
 		time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
 	}
 }

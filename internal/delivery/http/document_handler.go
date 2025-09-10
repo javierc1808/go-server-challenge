@@ -10,10 +10,16 @@ import (
 	"frontend-challenge/pkg/security"
 )
 
+// NotificationBroadcaster interfaz mínima para emitir notificaciones (se implementa en websocket.Hub)
+type NotificationBroadcaster interface {
+	BroadcastNotification(notification *entity.Notification)
+}
+
 // DocumentHandler maneja las peticiones HTTP para documentos
 type DocumentHandler struct {
 	documentUsecase *usecase.DocumentUsecase
 	sanitizer       *security.Sanitizer
+	notifier        NotificationBroadcaster
 }
 
 // NewDocumentHandler crea una nueva instancia de DocumentHandler
@@ -22,6 +28,12 @@ func NewDocumentHandler(documentUsecase *usecase.DocumentUsecase) *DocumentHandl
 		documentUsecase: documentUsecase,
 		sanitizer:       security.NewSanitizer(),
 	}
+}
+
+// WithNotifier permite inyectar un emisor de notificaciones
+func (h *DocumentHandler) WithNotifier(n NotificationBroadcaster) *DocumentHandler {
+	h.notifier = n
+	return h
 }
 
 // GetDocuments maneja la petición GET /documents
@@ -90,6 +102,18 @@ func (h *DocumentHandler) CreateDocument(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	// Validar user-name y user-id en el header
+	userID := r.Header.Get("user-id")
+	userName := r.Header.Get("user-name")
+	if userID == "" {
+		http.Error(w, "El header 'user-id' es requerido", http.StatusBadRequest)
+		return
+	}
+	if userName == "" {
+		http.Error(w, "El header 'user-name' es requerido", http.StatusBadRequest)
+		return
+	}
+
 	// El servidor establece los timestamps automáticamente
 	now := time.Now()
 	document.CreatedAt = now
@@ -111,7 +135,18 @@ func (h *DocumentHandler) CreateDocument(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// Responder con el documento creado (exactamente como se envió)
+	// Emitir notificación si hay notifier
+	if h.notifier != nil {
+		n := entity.NewNotification(
+			userID,
+			userName,
+			document.ID,
+			document.Title,
+		)
+		h.notifier.BroadcastNotification(n)
+	}
+
+	// Responder con el documento creado (exactamente como se envió + timestamps del server)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(document); err != nil {

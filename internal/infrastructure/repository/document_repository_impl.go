@@ -73,7 +73,7 @@ func (r *DocumentRepositoryImpl) GetByID(ctx context.Context, id string) (*entit
 	return doc, nil
 }
 
-// Create crea un nuevo documento (simulado)
+// Create crea un nuevo documento
 func (r *DocumentRepositoryImpl) Create(ctx context.Context, document *entity.Document) error {
 	// Almacenar en cache
 	return r.cache.Set(ctx, document.ID, document)
