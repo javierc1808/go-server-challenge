@@ -2,7 +2,7 @@ package entity
 
 import "time"
 
-// User representa un usuario en el dominio
+// User represents a user in the domain
 type User struct {
 	ID        string    `json:"id"`
 	Name      string    `json:"name"`
@@ -10,7 +10,7 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-// NewUser crea una nueva instancia de User
+// NewUser creates a new instance of User
 func NewUser(id, name string) *User {
 	now := time.Now()
 	return &User{
@@ -21,7 +21,7 @@ func NewUser(id, name string) *User {
 	}
 }
 
-// Validate valida los datos del usuario
+// Validate validates the user's data
 func (u *User) Validate() error {
 	if u.ID == "" {
 		return ErrInvalidUserID

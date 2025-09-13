@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// Config contiene la configuración de la aplicación
+// Config contains the application configuration
 type Config struct {
 	ServerAddress string
 	ReadTimeout   time.Duration
@@ -13,7 +13,7 @@ type Config struct {
 	IdleTimeout   time.Duration
 }
 
-// Load carga la configuración desde flags y variables de entorno
+// Load loads the configuration from flags and environment variables
 func Load() *Config {
 	addr := flag.String("addr", "localhost:8080", "http service address")
 	flag.Parse()

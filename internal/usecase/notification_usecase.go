@@ -7,14 +7,14 @@ import (
 	"frontend-challenge/internal/domain/repository"
 )
 
-// NotificationUsecase define los casos de uso para notificaciones
+// NotificationUsecase defines the use cases for notifications
 type NotificationUsecase struct {
 	notificationRepo repository.NotificationRepository
 	documentRepo     repository.DocumentRepository
 	userRepo         repository.UserRepository
 }
 
-// NewNotificationUsecase crea una nueva instancia de NotificationUsecase
+// NewNotificationUsecase creates a new instance of NotificationUsecase
 func NewNotificationUsecase(
 	notificationRepo repository.NotificationRepository,
 	documentRepo repository.DocumentRepository,
@@ -27,7 +27,7 @@ func NewNotificationUsecase(
 	}
 }
 
-// CreateNotification crea una nueva notificación
+// CreateNotification creates a new notification
 func (u *NotificationUsecase) CreateNotification(ctx context.Context, notification *entity.Notification) error {
 	if err := notification.Validate(); err != nil {
 		return err
@@ -35,7 +35,7 @@ func (u *NotificationUsecase) CreateNotification(ctx context.Context, notificati
 	return u.notificationRepo.Create(ctx, notification)
 }
 
-// GetNotificationsByUserID obtiene notificaciones por ID de usuario
+// GetNotificationsByUserID gets notifications by user ID
 func (u *NotificationUsecase) GetNotificationsByUserID(ctx context.Context, userID string) ([]*entity.Notification, error) {
 	if userID == "" {
 		return nil, entity.ErrInvalidUserID
@@ -43,13 +43,13 @@ func (u *NotificationUsecase) GetNotificationsByUserID(ctx context.Context, user
 	return u.notificationRepo.GetByUserID(ctx, userID)
 }
 
-// GetAllNotifications obtiene todas las notificaciones
+// GetAllNotifications gets all notifications
 func (u *NotificationUsecase) GetAllNotifications(ctx context.Context) ([]*entity.Notification, error) {
 	return u.notificationRepo.GetAll(ctx)
 }
 
-// NotifyDocumentCreated crea una notificación cuando se crea un documento
+// NotifyDocumentCreated creates a notification when a document is created
 func (u *NotificationUsecase) NotifyDocumentCreated(ctx context.Context, userID, userName, documentID, documentTitle string) error {
-	notification := entity.NewNotification(userID, userName, documentID, documentTitle)
+	notification := entity.NewNotification(userID, userName, documentID, documentTitle, "document.created")
 	return u.CreateNotification(ctx, notification)
 }

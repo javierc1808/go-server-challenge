@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// SecurityEvent representa un evento de seguridad
+// SecurityEvent represents a security event
 type SecurityEvent struct {
 	Timestamp   time.Time              `json:"timestamp"`
 	EventType   string                 `json:"event_type"`
@@ -22,13 +22,13 @@ type SecurityEvent struct {
 	Details     map[string]interface{} `json:"details,omitempty"`
 }
 
-// SecurityLogger maneja el logging de eventos de seguridad
+// SecurityLogger handles security event logging
 type SecurityLogger struct {
 	logger *log.Logger
 	file   *os.File
 }
 
-// NewSecurityLogger crea una nueva instancia de SecurityLogger
+// NewSecurityLogger creates a new instance of SecurityLogger
 func NewSecurityLogger(logFile string) (*SecurityLogger, error) {
 	file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
@@ -43,11 +43,11 @@ func NewSecurityLogger(logFile string) (*SecurityLogger, error) {
 	}, nil
 }
 
-// LogEvent registra un evento de seguridad
+// LogEvent logs a security event
 func (sl *SecurityLogger) LogEvent(event SecurityEvent) {
 	event.Timestamp = time.Now().UTC()
 
-	// Convertir a JSON
+	// Convert to JSON
 	jsonData, err := json.Marshal(event)
 	if err != nil {
 		sl.logger.Printf("Error marshaling security event: %v", err)
@@ -57,7 +57,7 @@ func (sl *SecurityLogger) LogEvent(event SecurityEvent) {
 	sl.logger.Println(string(jsonData))
 }
 
-// LogSuspiciousActivity registra actividad sospechosa
+// LogSuspiciousActivity logs suspicious activity
 func (sl *SecurityLogger) LogSuspiciousActivity(r *http.Request, message string, details map[string]interface{}) {
 	event := SecurityEvent{
 		EventType:   "SUSPICIOUS_ACTIVITY",
@@ -73,7 +73,7 @@ func (sl *SecurityLogger) LogSuspiciousActivity(r *http.Request, message string,
 	sl.LogEvent(event)
 }
 
-// LogRateLimitExceeded registra exceso de rate limit
+// LogRateLimitExceeded logs rate limit exceeded
 func (sl *SecurityLogger) LogRateLimitExceeded(r *http.Request, limit int) {
 	event := SecurityEvent{
 		EventType:   "RATE_LIMIT_EXCEEDED",
@@ -91,7 +91,7 @@ func (sl *SecurityLogger) LogRateLimitExceeded(r *http.Request, limit int) {
 	sl.LogEvent(event)
 }
 
-// LogInvalidInput registra input inválido
+// LogInvalidInput logs invalid input
 func (sl *SecurityLogger) LogInvalidInput(r *http.Request, input string, error string) {
 	event := SecurityEvent{
 		EventType:   "INVALID_INPUT",
@@ -110,7 +110,7 @@ func (sl *SecurityLogger) LogInvalidInput(r *http.Request, input string, error s
 	sl.LogEvent(event)
 }
 
-// LogAuthenticationFailure registra fallo de autenticación
+// LogAuthenticationFailure logs authentication failure
 func (sl *SecurityLogger) LogAuthenticationFailure(r *http.Request, username string) {
 	event := SecurityEvent{
 		EventType:   "AUTHENTICATION_FAILURE",
@@ -128,7 +128,7 @@ func (sl *SecurityLogger) LogAuthenticationFailure(r *http.Request, username str
 	sl.LogEvent(event)
 }
 
-// getClientIP obtiene la IP real del cliente
+// getClientIP gets the real client IP
 func (sl *SecurityLogger) getClientIP(r *http.Request) string {
 	if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
 		return forwarded
@@ -139,7 +139,7 @@ func (sl *SecurityLogger) getClientIP(r *http.Request) string {
 	return r.RemoteAddr
 }
 
-// Close cierra el logger
+// Close closes the logger
 func (sl *SecurityLogger) Close() error {
 	return sl.file.Close()
 }

@@ -1,39 +1,39 @@
 # Frontend Challenge - Clean Architecture
 
-Este proyecto ha sido refactorizado siguiendo los principios de **Clean Architecture** para mejorar la mantenibilidad, testabilidad y escalabilidad del código.
+This project was refactored following Clean Architecture principles to improve maintainability, testability, and scalability.
 
-## 🏗️ Estructura del Proyecto
+## 🏗️ Project Structure
 
 ```
 frontend-challenge/
 ├── cmd/
-│   └── server/                 # Punto de entrada de la aplicación
+│   └── server/                 # Application entrypoint
 │       └── main.go
 ├── internal/
-│   ├── domain/                 # Capa de Dominio (Entidades y Reglas de Negocio)
-│   │   ├── entity/            # Entidades del dominio
+│   ├── domain/                 # Domain layer (Entities & Business Rules)
+│   │   ├── entity/            # Domain entities
 │   │   │   ├── user.go
 │   │   │   ├── document.go
 │   │   │   ├── notification.go
 │   │   │   └── errors.go
-│   │   └── repository/        # Interfaces de repositorios
+│   │   └── repository/        # Repository interfaces
 │   │       ├── user_repository.go
 │   │       ├── document_repository.go
 │   │       └── notification_repository.go
-│   ├── usecase/               # Capa de Casos de Uso (Lógica de Aplicación)
+│   ├── usecase/               # Use Case layer (Application Logic)
 │   │   ├── document_usecase.go
 │   │   └── notification_usecase.go
-│   ├── infrastructure/        # Capa de Infraestructura (Implementaciones)
+│   ├── infrastructure/        # Infrastructure layer (Implementations)
 │   │   └── repository/
 │   │       ├── user_repository_impl.go
 │   │       ├── document_repository_impl.go
 │   │       └── notification_repository_impl.go
-│   └── delivery/              # Capa de Entrega (HTTP, WebSocket, etc.)
+│   └── delivery/              # Delivery layer (HTTP, WebSocket, etc.)
 │       ├── http/
 │       │   └── document_handler.go
 │       └── websocket/
 │           └── notification_handler.go
-├── pkg/                       # Paquetes compartidos
+├── pkg/                       # Shared packages
 │   ├── config/
 │   │   └── config.go
 │   └── logger/
@@ -43,123 +43,123 @@ frontend-challenge/
 └── README.md
 ```
 
-## 🎯 Principios de Clean Architecture Aplicados
+## 🎯 Applied Clean Architecture Principles
 
-### 1. **Separación de Responsabilidades**
-- **Domain**: Contiene las entidades y reglas de negocio puras
-- **Use Cases**: Contiene la lógica de aplicación específica
-- **Infrastructure**: Implementa las interfaces definidas en el dominio
-- **Delivery**: Maneja la comunicación externa (HTTP, WebSocket)
+### 1. Separation of Concerns
+- Domain: pure entities and business rules
+- Use Cases: application-specific logic
+- Infrastructure: implements domain interfaces
+- Delivery: external communication (HTTP, WebSocket)
 
-### 2. **Inversión de Dependencias**
-- Las capas internas no dependen de las externas
-- Las interfaces están definidas en el dominio
-- Las implementaciones están en la infraestructura
+### 2. Dependency Inversion
+- Inner layers do not depend on outer layers
+- Interfaces are defined in the domain
+- Implementations live in infrastructure
 
-### 3. **Testabilidad**
-- Cada capa puede ser probada independientemente
-- Las dependencias se pueden mockear fácilmente
-- La lógica de negocio está aislada
+### 3. Testability
+- Each layer can be tested independently
+- Dependencies can be easily mocked
+- Business logic is isolated
 
-## 🚀 Cómo Ejecutar
+## 🚀 How to Run
 
-### Requisitos
-- Go 1.21 o superior
+### Requirements
+- Go 1.21 or later
 
-### Instalación y Ejecución
+### Install and Run
 ```bash
-# Instalar dependencias
+# Install dependencies
 go mod tidy
 
-# Ejecutar el servidor
+# Run the server
 go run cmd/server/main.go
 
-# O con flags personalizados
+# Or with custom flags
 go run cmd/server/main.go -addr localhost:9090
 ```
 
-## 📡 Endpoints Disponibles
+## 📡 Available Endpoints
 
-### 1. **API de Documentos**
+### 1. Documents API
 ```
 GET http://localhost:8080/documents
 ```
-Retorna una lista de documentos con sus metadatos.
+Returns a list of documents with metadata.
 
-### 2. **Notificaciones en Tiempo Real**
+### 2. Real-time Notifications
 ```
 WS ws://localhost:8080/notifications
 ```
-Conexión WebSocket que envía notificaciones simuladas en tiempo real.
+WebSocket connection that emits notifications when orders/documents are created/updated/deleted.
 
-## 🔧 Mejoras Implementadas
+## 🔧 Improvements
 
-### **Seguridad**
-- Headers de seguridad añadidos
-- Validación de entrada en entidades
-- Manejo seguro de errores
-- Logging estructurado
+### Security
+- Security headers
+- Input validation in entities
+- Safer error handling
+- Structured logging
 
-### **Arquitectura**
-- Separación clara de responsabilidades
-- Inyección de dependencias
-- Interfaces bien definidas
-- Código más mantenible y testeable
+### Architecture
+- Clear separation of concerns
+- Dependency injection
+- Well-defined interfaces
+- More maintainable and testable code
 
-### **Configuración**
-- Configuración centralizada
-- Manejo de señales del sistema
-- Shutdown graceful del servidor
-- Timeouts configurables
+### Configuration
+- Centralized configuration
+- OS signals handling
+- Graceful server shutdown
+- Configurable timeouts
 
 ## 🧪 Testing
 
-La nueva arquitectura facilita el testing:
+The new architecture makes testing easier:
 
 ```go
-// Ejemplo de test unitario para un caso de uso
+// Example unit test for a use case
 func TestDocumentUsecase_GetAllDocuments(t *testing.T) {
-    // Mock del repositorio
+    // Mock repository
     mockRepo := &MockDocumentRepository{}
     
-    // Crear caso de uso con mock
+    // Create use case with mock
     usecase := NewDocumentUsecase(mockRepo, mockUserRepo)
     
-    // Ejecutar test
+    // Run test
     documents, err := usecase.GetAllDocuments(context.Background())
     
-    // Verificar resultados
+    // Assert results
     assert.NoError(t, err)
     assert.NotNil(t, documents)
 }
 ```
 
-## 🔄 Migración desde Código Original
+## 🔄 Migration from Original Code
 
-El código original en `server.go` ha sido refactorizado manteniendo la misma funcionalidad pero con una arquitectura mucho más robusta:
+The original `server.go` was refactored keeping functionality while improving architecture:
 
-- ✅ Misma funcionalidad de endpoints
-- ✅ Misma generación de datos simulados
-- ✅ Mejor separación de responsabilidades
-- ✅ Código más testeable
-- ✅ Mejor manejo de errores
-- ✅ Configuración más flexible
+- ✅ Same endpoint functionality
+- ✅ Same simulated data generation
+- ✅ Better separation of concerns
+- ✅ More testable code
+- ✅ Improved error handling
+- ✅ More flexible configuration
 
-## 📈 Beneficios de la Nueva Arquitectura
+## 📈 Benefits of the New Architecture
 
-1. **Mantenibilidad**: Código más fácil de mantener y extender
-2. **Testabilidad**: Cada componente puede ser probado independientemente
-3. **Escalabilidad**: Fácil añadir nuevas funcionalidades
-4. **Flexibilidad**: Fácil cambiar implementaciones (BD, cache, etc.)
-5. **Seguridad**: Mejor manejo de errores y validaciones
-6. **Performance**: Mejor gestión de recursos y timeouts
+1. Maintainability: easier to maintain and extend
+2. Testability: each component can be tested independently
+3. Scalability: easy to add features
+4. Flexibility: swap implementations (DB, cache, etc.)
+5. Security: improved error handling and validations
+6. Performance: better resource and timeout management
 
-## 🚧 Próximos Pasos Recomendados
+## 🚧 Recommended Next Steps
 
-1. **Implementar tests unitarios** para cada capa
-2. **Añadir autenticación y autorización**
-3. **Implementar base de datos real** (PostgreSQL, MongoDB)
-4. **Añadir cache** (Redis)
-5. **Implementar métricas y monitoreo**
-6. **Añadir documentación API** (Swagger)
-7. **Implementar CI/CD pipeline**
+1. Implement unit tests across layers
+2. Add authentication and authorization
+3. Implement a real database (PostgreSQL, MongoDB)
+4. Add cache (Redis)
+5. Implement metrics and monitoring
+6. Add API documentation (Swagger)
+7. Add a CI/CD pipeline

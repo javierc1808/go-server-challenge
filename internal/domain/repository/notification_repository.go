@@ -6,14 +6,14 @@ import (
 	"frontend-challenge/internal/domain/entity"
 )
 
-// NotificationRepository define la interfaz para el repositorio de notificaciones
+// NotificationRepository defines the interface for the notification repository
 type NotificationRepository interface {
-	// Create crea una nueva notificación
+	// Create creates a new notification
 	Create(ctx context.Context, notification *entity.Notification) error
 
-	// GetByUserID obtiene notificaciones por ID de usuario
+	// GetByUserID gets notifications by user ID
 	GetByUserID(ctx context.Context, userID string) ([]*entity.Notification, error)
 
-	// GetAll obtiene todas las notificaciones
+	// GetAll gets all notifications
 	GetAll(ctx context.Context) ([]*entity.Notification, error)
 }

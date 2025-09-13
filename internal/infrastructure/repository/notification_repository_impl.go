@@ -7,32 +7,32 @@ import (
 	"frontend-challenge/internal/domain/repository"
 )
 
-// NotificationRepositoryImpl implementa NotificationRepository
+// NotificationRepositoryImpl implements NotificationRepository
 type NotificationRepositoryImpl struct {
-	// En una implementación real, aquí tendríamos una conexión a base de datos
-	// o un sistema de mensajería como Redis, RabbitMQ, etc.
+	// In a real implementation, here we would have a database connection
+	// or a messaging system like Redis, RabbitMQ, etc.
 }
 
-// NewNotificationRepositoryImpl crea una nueva instancia de NotificationRepositoryImpl
+// NewNotificationRepositoryImpl creates a new instance of NotificationRepositoryImpl
 func NewNotificationRepositoryImpl() repository.NotificationRepository {
 	return &NotificationRepositoryImpl{}
 }
 
-// Create crea una nueva notificación (simulado)
+// Create creates a new notification (simulated)
 func (r *NotificationRepositoryImpl) Create(ctx context.Context, notification *entity.Notification) error {
-	// En una implementación real, guardaríamos la notificación en la base de datos
-	// y la enviaríamos a través de un sistema de mensajería
+	// In a real implementation, we would save the notification in the database
+	// and send it through a messaging system
 	return nil
 }
 
-// GetByUserID obtiene notificaciones por ID de usuario (simulado)
+// GetByUserID gets notifications by user ID (simulated)
 func (r *NotificationRepositoryImpl) GetByUserID(ctx context.Context, userID string) ([]*entity.Notification, error) {
-	// En una implementación real, buscaríamos en la base de datos
+	// In a real implementation, we would search in the database
 	return []*entity.Notification{}, nil
 }
 
-// GetAll obtiene todas las notificaciones (simulado)
+// GetAll gets all notifications (simulated)
 func (r *NotificationRepositoryImpl) GetAll(ctx context.Context) ([]*entity.Notification, error) {
-	// En una implementación real, buscaríamos en la base de datos
+	// In a real implementation, we would search in the database
 	return []*entity.Notification{}, nil
 }

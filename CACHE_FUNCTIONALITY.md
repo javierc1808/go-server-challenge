@@ -1,21 +1,21 @@
-# 🗄️ Funcionalidad de Cache Implementada
+# 🗄️ Implemented Cache Functionality
 
-Este documento describe el sistema de cache implementado para los documentos en el proyecto.
+This document describes the in-memory cache system implemented for documents in the project.
 
-## 📋 Resumen de Funcionalidades
+## 📋 Feature Summary
 
-| Funcionalidad | Estado | Descripción |
-|---------------|--------|-------------|
-| **Cache en Memoria** | ✅ Implementado | Almacenamiento temporal de documentos |
-| **TTL Configurable** | ✅ Implementado | Tiempo de vida de 24 horas por defecto |
-| **Limpieza Automática** | ✅ Implementado | Eliminación de elementos expirados |
-| **Estadísticas** | ✅ Implementado | Métricas de uso del cache |
-| **Persistencia de Sesión** | ✅ Implementado | Los documentos persisten durante la ejecución |
-| **Pérdida al Reiniciar** | ✅ Implementado | Los documentos se pierden al reiniciar el servidor |
+| Feature | Status | Description |
+|---------|--------|-------------|
+| **In-memory Cache** | ✅ Implemented | Temporary storage for documents |
+| **Configurable TTL** | ✅ Implemented | Default time-to-live: 24 hours |
+| **Automatic Cleanup** | ✅ Implemented | Removal of expired items |
+| **Statistics** | ✅ Implemented | Cache usage metrics |
+| **Session Persistence** | ✅ Implemented | Documents persist during the server session |
+| **Loss on Restart** | ✅ Implemented | Documents are lost when the server restarts |
 
-## 🏗️ Arquitectura del Cache
+## 🏗️ Cache Architecture
 
-### **Interfaz de Cache**
+### Cache Interface
 ```go
 type CacheRepository interface {
     Set(ctx context.Context, key string, document *entity.Document) error
@@ -28,7 +28,7 @@ type CacheRepository interface {
 }
 ```
 
-### **Implementación en Memoria**
+### In-memory Implementation
 ```go
 type MemoryCache struct {
     documents map[string]*entity.Document
@@ -38,65 +38,65 @@ type MemoryCache struct {
 }
 ```
 
-## 🔄 Flujo de Funcionamiento
+## 🔄 How It Works
 
-### **1. Primera Carga (Servidor Iniciado)**
+### 1) First Load (Server just started)
 ```
 GET /documents
     ↓
-Cache vacío
+Empty cache
     ↓
-Generar documentos simulados
+Generate simulated documents
     ↓
-Almacenar en cache
+Store in cache
     ↓
-Devolver documentos
+Return documents
 ```
 
-### **2. Cargas Subsecuentes**
+### 2) Subsequent Loads
 ```
 GET /documents
     ↓
-Cache con datos
+Cache contains data
     ↓
-Devolver documentos del cache
+Return cached documents
 ```
 
-### **3. Creación de Documento**
+### 3) Document Creation
 ```
 POST /documents
     ↓
-Validar documento
+Validate document
     ↓
-Almacenar en cache
+Store in cache
     ↓
-Devolver documento creado
+Return created document
 ```
 
-### **4. Reinicio del Servidor**
+### 4) Server Restart
 ```
-Servidor se detiene
+Server stops
     ↓
-Cache se pierde (memoria)
+Cache is lost (in-memory)
     ↓
-Servidor se inicia
+Server starts
     ↓
-Cache vacío nuevamente
+Cache is empty again
 ```
 
-## 📊 Características del Cache
+## 📊 Cache Characteristics
 
-### **TTL (Time To Live)**
-- **Configuración**: 24 horas por defecto
-- **Limpieza**: Automática cada 5 minutos
-- **Expiración**: Los documentos se marcan como expirados
+### TTL (Time To Live)
+- Default: 24 hours
+- Automatic cleanup every 5 minutes
+- Expired documents are ignored and then removed by the cleaner
 
-### **Thread Safety**
-- **Mutex**: Protección contra acceso concurrente
-- **Read/Write Locks**: Optimización para lecturas múltiples
-- **Operaciones Atómicas**: Garantía de consistencia
+### Thread Safety
+- Mutex protection for concurrent access
+- Read/Write locks to optimize multiple readers
+- Operations are consistent and safe
 
-### **Estadísticas en Tiempo Real**
+### Real-time Statistics
 ```json
 {
   "cache": {
@@ -108,177 +108,177 @@ Cache vacío nuevamente
 }
 ```
 
-## 🚀 Endpoints Disponibles
+## 🚀 Available Endpoints
 
-### **GET /documents**
-- **Descripción**: Obtiene todos los documentos
-- **Comportamiento**: 
-  - Si hay documentos en cache → devuelve del cache
-  - Si cache está vacío → genera documentos simulados y los almacena
+### GET /documents
+- Description: Fetch all documents
+- Behavior:
+  - If cache has documents → returns from cache
+  - If cache is empty → generates simulated documents and stores them
 
-### **POST /documents**
-- **Descripción**: Crea un nuevo documento
-- **Body**: JSON con datos del documento
-- **Comportamiento**: Almacena el documento en cache
+### POST /documents
+- Description: Create a new document
+- Body: JSON document payload
+- Behavior: Stores the document in the cache
 
-### **GET /security/stats**
-- **Descripción**: Estadísticas del sistema incluyendo cache
-- **Incluye**: Métricas de documentos, TTL, elementos expirados
+### GET /security/stats
+- Description: System stats including cache metrics
+- Includes: Document metrics, TTL, expired elements, and more
 
-## 🧪 Pruebas de Funcionalidad
+## 🧪 Functional Tests
 
-### **Script de Prueba Actualizado**
+### Updated Test Script
 ```bash
 ./test_endpoints.sh
 ```
 
-**Incluye:**
-- ✅ Prueba de GET /documents (carga inicial)
-- ✅ Prueba de POST /documents (creación)
-- ✅ Verificación de persistencia en cache
-- ✅ Prueba de estadísticas
+Includes:
+- ✅ GET /documents (first load)
+- ✅ POST /documents (create)
+- ✅ Cache persistence verification
+- ✅ Stats verification
 
-### **Pruebas Manuales**
+### Manual Tests
 
-#### **1. Verificar Persistencia de Sesión**
+#### 1) Verify Session Persistence
 ```bash
-# Primera petición (genera documentos)
+# First request (generates documents)
 curl http://localhost:8080/documents
 
-# Segunda petición (debe devolver los mismos documentos)
+# Second request (should return the same set from cache)
 curl http://localhost:8080/documents
 ```
 
-#### **2. Crear Documento Personalizado**
+#### 2) Create a Custom Document
 ```bash
 curl -X POST -H "Content-Type: application/json" \
   -d '{
-    "id": "mi-documento-123",
-    "title": "Mi Documento",
+    "id": "my-document-123",
+    "title": "My Document",
     "version": "1.0.0",
-    "attachments": ["archivo.pdf"],
-    "contributors": [{"id": "user-1", "name": "Usuario 1"}]
+    "attachments": ["file.pdf"],
+    "contributors": [{"id": "user-1", "name": "User 1"}]
   }' \
   http://localhost:8080/documents
 ```
 
-#### **3. Verificar Estadísticas**
+#### 3) Verify Statistics
 ```bash
 curl http://localhost:8080/security/stats | jq .cache
 ```
 
-## 📁 Archivos Implementados
+## 📁 Implemented Files
 
-### **Nuevos Archivos**
-- `internal/domain/repository/cache_repository.go` - Interfaz del cache
-- `internal/infrastructure/repository/memory_cache.go` - Implementación en memoria
+### New Files
+- `internal/domain/repository/cache_repository.go` – Cache interface
+- `internal/infrastructure/repository/memory_cache.go` – In-memory implementation
 
-### **Archivos Modificados**
-- `internal/infrastructure/repository/document_repository_impl.go` - Integración con cache
-- `internal/delivery/http/document_handler.go` - Endpoint POST para crear documentos
-- `cmd/server/main.go` - Inicialización del cache
-- `test_endpoints.sh` - Pruebas actualizadas
+### Modified Files
+- `internal/infrastructure/repository/document_repository_impl.go` – Cache integration
+- `internal/delivery/http/document_handler.go` – POST endpoint to create documents
+- `cmd/server/main.go` – Cache initialization
+- `scripts/test_endpoints.sh` – Updated tests
 
-## 🔧 Configuración
+## 🔧 Configuration
 
-### **TTL del Cache**
+### Cache TTL
 ```go
-// En main.go
-cache := repository.NewMemoryCache(24 * time.Hour) // 24 horas
+// In main.go
+cache := repository.NewMemoryCache(24 * time.Hour) // 24 hours
 ```
 
-### **Limpieza Automática**
+### Automatic Cleanup
 ```go
-// Cada 5 minutos se ejecuta la limpieza
+// Cleanup runs every 5 minutes
 go cache.startCleanup()
 ```
 
-### **Estadísticas**
+### Statistics
 ```go
-// Acceso a estadísticas
+// Access cache statistics
 stats := cache.GetStats()
 ```
 
-## 📈 Beneficios Obtenidos
+## 📈 Benefits
 
-### **Rendimiento**
-- ⚡ **Respuestas más rápidas** para documentos existentes
-- 🔄 **Reutilización de datos** generados
-- 💾 **Menos procesamiento** en peticiones repetidas
+### Performance
+- ⚡ Faster responses for existing documents
+- 🔄 Reuse of generated data
+- 💾 Less processing for repeated requests
 
-### **Funcionalidad**
-- 📝 **Creación de documentos** personalizados
-- 🔍 **Persistencia durante la sesión** del servidor
-- 📊 **Monitoreo en tiempo real** del cache
+### Functionality
+- 📝 Create custom documents
+- 🔍 Persistence during server session
+- 📊 Real-time cache monitoring
 
-### **Experiencia de Usuario**
-- 🚀 **Respuestas consistentes** para el mismo conjunto de datos
-- ✨ **Documentos personalizados** se mantienen disponibles
-- 🔄 **Comportamiento predecible** al reiniciar el servidor
+### User Experience
+- 🚀 Consistent responses for the same dataset
+- ✨ Custom documents remain available during the session
+- 🔄 Predictable behavior after server restarts
 
-## ⚠️ Consideraciones Importantes
+## ⚠️ Important Considerations
 
-### **Limitaciones Actuales**
-- **Memoria**: Los documentos se almacenan en RAM
-- **Pérdida de Datos**: Al reiniciar el servidor se pierden los documentos
-- **Escalabilidad**: No funciona en entornos distribuidos
+### Current Limitations
+- Memory: documents are stored in RAM
+- Data Loss: documents are lost on server restart
+- Scalability: not designed for distributed environments
 
-### **Casos de Uso Ideales**
-- **Desarrollo**: Pruebas rápidas con datos persistentes
-- **Demostraciones**: Mostrar funcionalidad con datos reales
-- **Prototipos**: Validación de conceptos sin base de datos
+### Ideal Use Cases
+- Development: quick tests with persistent data during a session
+- Demos: show functionality with real-looking data
+- Prototypes: validate concepts without a database
 
-### **Próximos Pasos Recomendados**
-1. **Implementar persistencia** en base de datos
-2. **Añadir cache distribuido** (Redis)
-3. **Implementar estrategias de invalidación**
-4. **Añadir métricas de rendimiento**
-5. **Configurar políticas de limpieza**
+### Recommended Next Steps
+1. Implement database persistence
+2. Add distributed cache (Redis)
+3. Implement invalidation strategies
+4. Add performance metrics
+5. Configure cleanup policies
 
-## 🎯 Casos de Uso
+## 🎯 Use Cases
 
-### **Escenario 1: Desarrollo Local**
+### Scenario 1: Local Development
 ```bash
-# Iniciar servidor
+# Start the server
 go run cmd/server/main.go
 
-# Crear documentos personalizados
+# Create custom documents
 curl -X POST ... /documents
 
-# Los documentos persisten durante la sesión
-curl /documents  # Devuelve documentos creados + simulados
+# Documents persist during the session
+curl /documents  # Returns created + simulated documents
 
-# Al reiniciar el servidor, se pierden los personalizados
-# pero se regeneran los simulados
+# After restarting the server, custom documents are lost
+# and simulated ones are re-generated
 ```
 
-### **Escenario 2: Demostración**
+### Scenario 2: Demo
 ```bash
-# Mostrar funcionalidad básica
+# Show basic functionality
 curl /documents
 
-# Crear documentos específicos para la demo
+# Create specific documents for the demo
 curl -X POST ... /documents
 
-# Verificar que los documentos personalizados están disponibles
+# Verify custom documents are available
 curl /documents
 ```
 
-### **Escenario 3: Testing**
+### Scenario 3: Testing
 ```bash
-# Verificar comportamiento inicial
+# Verify initial behavior
 curl /documents
 
-# Crear datos de prueba
+# Create test data
 curl -X POST ... /documents
 
-# Verificar persistencia
+# Verify persistence
 curl /documents
 
-# Reiniciar servidor y verificar reset
-# (Los documentos personalizados se pierden)
+# Restart the server and verify reset
+# (Custom documents are lost)
 ```
 
 ---
 
-**¡El sistema de cache está completamente funcional y listo para usar!** 🚀🗄️
+**The cache system is fully functional and ready to use!** 🚀🗄️

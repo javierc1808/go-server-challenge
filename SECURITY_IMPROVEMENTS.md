@@ -1,79 +1,79 @@
-# 🛡️ Mejoras de Seguridad Implementadas
+# 🛡️ Implemented Security Improvements
 
-Este documento describe las mejoras de seguridad implementadas en el proyecto refactorizado con Clean Architecture.
+This document describes the security improvements implemented in the project refactored with Clean Architecture.
 
-## 📊 Resumen de Mejoras
+## 📊 Summary of Improvements
 
-| Categoría | Mejora | Estado | Prioridad |
-|-----------|--------|--------|-----------|
-| **Rate Limiting** | Middleware de limitación de velocidad | ✅ Implementado | Alta |
-| **Validación de Request** | Validación de tamaño de petición | ✅ Implementado | Alta |
-| **Sanitización** | Sanitización de inputs | ✅ Implementado | Alta |
-| **CSP** | Content Security Policy | ✅ Implementado | Alta |
-| **Logging de Seguridad** | Sistema de logging de eventos | ✅ Implementado | Media |
-| **Monitoreo de Amenazas** | Detección de patrones sospechosos | ✅ Implementado | Media |
-| **Rotación de Logs** | Sistema de rotación automática | ✅ Implementado | Media |
+| Category | Improvement | Status | Priority |
+|----------|-------------|--------|----------|
+| **Rate Limiting** | Per-IP rate limiting middleware | ✅ Implemented | High |
+| **Request Validation** | Request size and header validation | ✅ Implemented | High |
+| **Sanitization** | Input sanitization | ✅ Implemented | High |
+| **CSP** | Content Security Policy | ✅ Implemented | High |
+| **Security Logging** | Security event logging | ✅ Implemented | Medium |
+| **Threat Monitoring** | Suspicious pattern detection | ✅ Implemented | Medium |
+| **Log Rotation** | Automatic log rotation | ✅ Implemented | Medium |
 
-## 🔧 Mejoras Implementadas
+## 🔧 Implemented Improvements
 
-### 1. **Rate Limiting (ALTA)**
+### 1. Rate Limiting (HIGH)
 ```go
-// Configuración: 100 requests por minuto por IP
+// Configuration: 100 requests per minute per IP
 rateLimiter := middleware.NewRateLimiter(100, time.Minute)
 ```
 
-**Características:**
-- ✅ Limitación por IP
-- ✅ Ventana de tiempo configurable
-- ✅ Limpieza automática de datos antiguos
-- ✅ Estadísticas en tiempo real
+**Features:**
+- ✅ Per-IP limiting
+- ✅ Configurable time window
+- ✅ Automatic cleanup of old entries
+- ✅ Real-time stats
 
-**Beneficios:**
-- Protección contra ataques DDoS
-- Prevención de abuso de API
-- Mejor distribución de recursos
+**Benefits:**
+- DDoS protection
+- API abuse prevention
+- Better resource distribution
 
-### 2. **Validación de Request (ALTA)**
+### 2. Request Validation (HIGH)
 ```go
-// Configuración: 1MB máximo por petición
+// Configuration: 1MB max per request
 requestValidator := middleware.NewRequestValidator(1024 * 1024)
 ```
 
-**Características:**
-- ✅ Validación de tamaño de body
-- ✅ Validación de Content-Length
-- ✅ Validación de Content-Type
-- ✅ Protección contra buffer overflow
+**Features:**
+- ✅ Body size validation
+- ✅ Content-Length validation
+- ✅ Content-Type validation
+- ✅ Protection against buffer overflow
 
-**Beneficios:**
-- Prevención de ataques de desbordamiento
-- Mejor gestión de memoria
-- Validación temprana de peticiones
+**Benefits:**
+- Prevent overflow attacks
+- Better memory management
+- Early request validation
 
-### 3. **Sanitización de Inputs (ALTA)**
+### 3. Input Sanitization (HIGH)
 ```go
 sanitizer := security.NewSanitizer()
 sanitized, err := sanitizer.SanitizeString(input)
 ```
 
-**Características:**
-- ✅ Escape de caracteres HTML
-- ✅ Eliminación de caracteres de control
-- ✅ Normalización de espacios
-- ✅ Validación de formatos (email, UUID)
-- ✅ Validación de longitud
+**Features:**
+- ✅ HTML escaping
+- ✅ Removal of control characters
+- ✅ Whitespace normalization
+- ✅ Format validation (email, UUID)
+- ✅ Length validation
 
-**Beneficios:**
-- Prevención de ataques XSS
-- Validación de datos de entrada
-- Limpieza automática de inputs
+**Benefits:**
+- Prevent XSS
+- Input data validation
+- Automatic input cleanup
 
-### 4. **Content Security Policy (ALTA)**
+### 4. Content Security Policy (HIGH)
 ```go
 securityHeaders := middleware.NewSecurityHeaders(true)
 ```
 
-**Headers implementados:**
+**Headers included:**
 - ✅ `X-Content-Type-Options: nosniff`
 - ✅ `X-Frame-Options: DENY`
 - ✅ `X-XSS-Protection: 1; mode=block`
@@ -81,24 +81,24 @@ securityHeaders := middleware.NewSecurityHeaders(true)
 - ✅ `Content-Security-Policy`
 - ✅ `Permissions-Policy`
 
-**Beneficios:**
-- Protección contra XSS
-- Prevención de clickjacking
-- Control de recursos cargados
+**Benefits:**
+- XSS protection
+- Clickjacking prevention
+- Control over loaded resources
 
-### 5. **Logging de Seguridad (MEDIA)**
+### 5. Security Logging (MEDIUM)
 ```go
 securityLogger, err := security.NewSecurityLogger("logs/security.log")
 ```
 
-**Eventos registrados:**
-- ✅ Actividad sospechosa
-- ✅ Exceso de rate limit
-- ✅ Inputs inválidos
-- ✅ Fallos de autenticación
-- ✅ Patrones de ataque
+**Events logged:**
+- ✅ Suspicious activity
+- ✅ Rate limit exceeded
+- ✅ Invalid inputs
+- ✅ Authentication failures
+- ✅ Attack patterns
 
-**Formato JSON estructurado:**
+**Structured JSON example:**
 ```json
 {
   "timestamp": "2024-01-01T00:00:00Z",
@@ -109,39 +109,39 @@ securityLogger, err := security.NewSecurityLogger("logs/security.log")
 }
 ```
 
-### 6. **Monitoreo de Amenazas (MEDIA)**
+### 6. Threat Monitoring (MEDIUM)
 ```go
 threatMonitor := security.NewThreatMonitor(securityLogger)
 ```
 
-**Detección de patrones:**
-- ✅ User-Agents sospechosos
-- ✅ Rutas sensibles
-- ✅ Patrones de ataque (SQL injection, XSS)
+**Pattern detection:**
+- ✅ Suspicious User-Agents
+- ✅ Sensitive routes
+- ✅ Attack patterns (SQL injection, XSS)
 - ✅ Path traversal
-- ✅ Demasiadas peticiones
+- ✅ Too many requests
 
-**Niveles de amenaza:**
-- 🟢 **LOW**: 2+ eventos sospechosos
-- 🟡 **MEDIUM**: 5+ eventos sospechosos
-- 🔴 **HIGH**: 10+ eventos sospechosos (bloqueo automático)
+**Threat levels:**
+- 🟢 LOW: 2+ suspicious events
+- 🟡 MEDIUM: 5+ suspicious events
+- 🔴 HIGH: 10+ suspicious events (automatic block)
 
-### 7. **Rotación de Logs (MEDIA)**
+### 7. Log Rotation (MEDIUM)
 ```go
 logRotator := security.NewLogRotator("logs", 10, 10*1024*1024, true)
 ```
 
-**Características:**
-- ✅ Rotación por tamaño (10MB)
-- ✅ Rotación diaria
-- ✅ Retención de 10 archivos
-- ✅ Limpieza automática
-- ✅ Estadísticas de uso
+**Features:**
+- ✅ Rotation by size (10MB)
+- ✅ Daily rotation
+- ✅ Keep last 10 files
+- ✅ Automatic cleanup
+- ✅ Usage stats
 
-## 🚀 Nuevos Endpoints
+## 🚀 New Endpoints
 
-### **GET /security/stats**
-Retorna estadísticas de seguridad en tiempo real:
+### GET /security/stats
+Returns real-time security statistics:
 
 ```json
 {
@@ -167,137 +167,137 @@ Retorna estadísticas de seguridad en tiempo real:
 }
 ```
 
-### **GET /health**
-Health check del servidor:
+### GET /health
+Server health check:
 
 ```json
 "OK"
 ```
 
-## 📁 Estructura de Archivos de Seguridad
+## 📁 Security File Structure
 
 ```
 pkg/security/
-├── sanitizer.go          # Sanitización de inputs
-├── errors.go             # Errores de seguridad
-├── security_logger.go    # Logging de eventos
-├── threat_monitor.go     # Monitoreo de amenazas
-└── log_rotation.go       # Rotación de logs
+├── sanitizer.go          # Input sanitization
+├── errors.go             # Security errors
+├── security_logger.go    # Security event logging
+├── threat_monitor.go     # Threat monitoring
+└── log_rotation.go       # Log rotation
 
 internal/delivery/http/middleware/
 ├── rate_limiter.go       # Rate limiting
-├── request_validator.go  # Validación de requests
-└── security_headers.go   # Headers de seguridad
+├── request_validator.go  # Request validation
+└── security_headers.go   # Security headers
 
 logs/
-├── security.log          # Log principal de seguridad
-├── security.log.2024-01-01-12-00-00  # Logs rotados
+├── security.log          # Main security log
+├── security.log.2024-01-01-12-00-00  # Rotated logs
 └── ...
 ```
 
-## 🔍 Monitoreo y Alertas
+## 🔍 Monitoring and Alerts
 
-### **Logs de Seguridad**
-- Ubicación: `logs/security.log`
-- Formato: JSON estructurado
-- Rotación: Automática (diaria + por tamaño)
+### Security Logs
+- Location: `logs/security.log`
+- Format: structured JSON
+- Rotation: automatic (daily + by size)
 
-### **Métricas Disponibles**
-- IPs sospechosas activas
-- Nivel de amenaza por IP
-- Requests bloqueados por rate limit
-- Estadísticas de logs
-- Patrones de ataque detectados
+### Available Metrics
+- Active suspicious IPs
+- Threat level per IP
+- Requests blocked by rate limit
+- Log statistics
+- Detected attack patterns
 
-### **Alertas Automáticas**
-- Bloqueo automático de IPs con amenaza alta
-- Logging de actividad sospechosa
-- Rotación automática de logs
+### Automatic Alerts
+- Auto-block high-threat IPs
+- Log suspicious activity
+- Automatic log rotation
 
-## 🧪 Pruebas de Seguridad
+## 🧪 Security Tests
 
-### **Script de Prueba Actualizado**
+### Updated Test Script
 ```bash
 ./test_endpoints.sh
 ```
 
-**Incluye:**
-- ✅ Prueba de endpoints básicos
-- ✅ Prueba de rate limiting
-- ✅ Prueba de estadísticas de seguridad
-- ✅ Prueba de health check
+**Includes:**
+- ✅ Basic endpoint tests
+- ✅ Rate limiting test
+- ✅ Security stats test
+- ✅ Health check test
 
-### **Pruebas Manuales Recomendadas**
+### Recommended Manual Tests
 
-1. **Rate Limiting:**
+1. Rate Limiting:
    ```bash
-   # Hacer 150 peticiones rápidas (límite: 100/min)
+   # Perform 150 quick requests (limit: 100/min)
    for i in {1..150}; do curl http://localhost:8080/documents; done
    ```
 
-2. **Monitoreo de Amenazas:**
+2. Threat Monitoring:
    ```bash
-   # Simular User-Agent sospechoso
+   # Simulate a suspicious User-Agent
    curl -H "User-Agent: sqlmap" http://localhost:8080/documents
    ```
 
-3. **Validación de Request:**
+3. Request Validation:
    ```bash
-   # Enviar petición grande (>1MB)
+   # Send a large request (>1MB)
    curl -X POST -d "$(head -c 2M /dev/zero)" http://localhost:8080/documents
    ```
 
-## 📈 Beneficios Obtenidos
+## 📈 Benefits
 
-### **Seguridad Mejorada**
-- 🛡️ Protección contra ataques comunes
-- 🔍 Detección proactiva de amenazas
-- 📊 Monitoreo en tiempo real
-- 📝 Auditoría completa de eventos
+### Improved Security
+- 🛡️ Protection against common attacks
+- 🔍 Proactive threat detection
+- 📊 Real-time monitoring
+- 📝 Full audit trail
 
-### **Rendimiento Optimizado**
-- ⚡ Rate limiting eficiente
-- 🧹 Limpieza automática de datos
-- 📦 Rotación inteligente de logs
-- 🔄 Monitoreo sin impacto en performance
+### Performance
+- ⚡ Efficient rate limiting
+- 🧹 Automatic data cleanup
+- 📦 Smart log rotation
+- 🔄 Low-impact monitoring
 
-### **Mantenibilidad**
-- 🏗️ Arquitectura modular
-- 🔧 Configuración centralizada
-- 📋 Logging estructurado
-- 📊 Métricas detalladas
+### Maintainability
+- 🏗️ Modular architecture
+- 🔧 Centralized configuration
+- 📋 Structured logging
+- 📊 Detailed metrics
 
-## ⚠️ Consideraciones Importantes
+## ⚠️ Important Considerations
 
-### **Configuración de Producción**
-- Cambiar CORS de `*` a dominios específicos
-- Configurar HTTPS obligatorio
-- Ajustar límites de rate limiting según necesidades
-- Implementar autenticación y autorización
+### Production Setup
+- Change CORS from `*` to specific domains
+- Enforce HTTPS
+- Adjust rate limits to your needs
+- Implement authentication and authorization
 
-### **Monitoreo Continuo**
-- Revisar logs de seguridad regularmente
-- Configurar alertas para amenazas altas
-- Monitorear métricas de rate limiting
-- Verificar rotación de logs
+### Continuous Monitoring
+- Review security logs regularly
+- Configure alerts for high threats
+- Monitor rate limiting metrics
+- Verify log rotation
 
-### **Escalabilidad**
-- Considerar Redis para rate limiting distribuido
-- Implementar base de datos para logs persistentes
-- Configurar balanceador de carga con rate limiting
-- Añadir CDN para protección adicional
+### Scalability
+- Consider Redis for distributed rate limiting
+- Implement a database for persistent logs
+- Use a load balancer with rate limiting
+- Add a CDN for additional protection
 
-## 🎯 Próximos Pasos Recomendados
+## 🎯 Next Steps
 
-1. **Implementar autenticación JWT**
-2. **Añadir autorización basada en roles**
-3. **Configurar HTTPS obligatorio**
-4. **Implementar base de datos para logs**
-5. **Añadir alertas por email/Slack**
-6. **Configurar monitoreo con Prometheus/Grafana**
-7. **Implementar tests de seguridad automatizados**
-8. **Añadir documentación de API con Swagger**
+1. Implement JWT authentication
+2. Add role-based authorization
+3. Enforce HTTPS
+4. Persist security logs in a database
+5. Add email/Slack alerts
+6. Monitoring with Prometheus/Grafana
+7. Add automated security tests
+8. Add API documentation with Swagger
 
 ---
 
-**¡El proyecto ahora tiene una base sólida de seguridad que puede ser extendida según las necesidades específicas!** 🚀
+The project now has a solid security foundation that can be extended as needed. 🚀

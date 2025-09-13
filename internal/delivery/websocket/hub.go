@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// Notifier define la interfaz para difundir notificaciones a clientes WebSocket
+// Notifier defines the interface to broadcast notifications to WebSocket clients
 type Notifier interface {
 	BroadcastNotification(notification *entity.Notification)
 }
@@ -19,14 +19,14 @@ type Hub struct {
 	conns map[*websocket.Conn]bool
 }
 
-// NewHub crea una nueva instancia de Hub
+// NewHub creates a new Hub instance
 func NewHub() *Hub {
 	return &Hub{
 		conns: make(map[*websocket.Conn]bool),
 	}
 }
 
-// Register añade una conexión al hub
+// Register adds a connection to the hub
 func (h *Hub) Register(conn *websocket.Conn) {
 	h.mu.Lock()
 	h.conns[conn] = true
@@ -40,12 +40,12 @@ func (h *Hub) Unregister(conn *websocket.Conn) {
 	h.mu.Unlock()
 }
 
-// BroadcastNotification envía la notificación a todas las conexiones activas
+// BroadcastNotification sends the notification to all active connections
 func (h *Hub) BroadcastNotification(notification *entity.Notification) {
 	h.mu.RLock()
 	for conn := range h.conns {
 		if err := conn.WriteJSON(notification); err != nil {
-			// Si hay error al escribir, desconectar
+			// If write fails, disconnect
 			h.mu.RUnlock()
 			h.mu.Lock()
 			conn.Close()

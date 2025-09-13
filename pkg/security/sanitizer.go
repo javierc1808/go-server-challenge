@@ -6,15 +6,15 @@ import (
 	"strings"
 )
 
-// Sanitizer proporciona funciones de sanitización
+// Sanitizer provides sanitization functions
 type Sanitizer struct {
-	// Patrones de regex para validación
+	// Regex patterns for validation
 	emailRegex        *regexp.Regexp
 	uuidRegex         *regexp.Regexp
 	alphanumericRegex *regexp.Regexp
 }
 
-// NewSanitizer crea una nueva instancia de Sanitizer
+// NewSanitizer creates a new instance of Sanitizer
 func NewSanitizer() *Sanitizer {
 	return &Sanitizer{
 		emailRegex:        regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`),
@@ -23,21 +23,21 @@ func NewSanitizer() *Sanitizer {
 	}
 }
 
-// SanitizeString sanitiza una cadena de texto
+// SanitizeString sanitizes a text string
 func (s *Sanitizer) SanitizeString(input string) string {
-	// Escapar caracteres HTML
+	// Escape HTML characters
 	sanitized := html.EscapeString(input)
 
-	// Eliminar caracteres de control
+	// Remove control characters
 	sanitized = s.removeControlCharacters(sanitized)
 
-	// Normalizar espacios en blanco
+	// Normalize whitespace
 	sanitized = s.normalizeWhitespace(sanitized)
 
 	return strings.TrimSpace(sanitized)
 }
 
-// SanitizeEmail sanitiza y valida un email
+// SanitizeEmail sanitizes and validates an email
 func (s *Sanitizer) SanitizeEmail(email string) (string, error) {
 	sanitized := strings.ToLower(strings.TrimSpace(email))
 
@@ -48,7 +48,7 @@ func (s *Sanitizer) SanitizeEmail(email string) (string, error) {
 	return sanitized, nil
 }
 
-// SanitizeUUID sanitiza y valida un UUID
+// SanitizeUUID sanitizes and validates a UUID
 func (s *Sanitizer) SanitizeUUID(uuid string) (string, error) {
 	sanitized := strings.ToLower(strings.TrimSpace(uuid))
 
@@ -59,7 +59,7 @@ func (s *Sanitizer) SanitizeUUID(uuid string) (string, error) {
 	return sanitized, nil
 }
 
-// SanitizeAlphanumeric sanitiza texto alfanumérico
+// SanitizeAlphanumeric sanitizes alphanumeric text
 func (s *Sanitizer) SanitizeAlphanumeric(input string) (string, error) {
 	sanitized := s.SanitizeString(input)
 
@@ -70,7 +70,7 @@ func (s *Sanitizer) SanitizeAlphanumeric(input string) (string, error) {
 	return sanitized, nil
 }
 
-// removeControlCharacters elimina caracteres de control
+// removeControlCharacters removes control characters
 func (s *Sanitizer) removeControlCharacters(input string) string {
 	var result strings.Builder
 	for _, r := range input {
@@ -81,14 +81,14 @@ func (s *Sanitizer) removeControlCharacters(input string) string {
 	return result.String()
 }
 
-// normalizeWhitespace normaliza espacios en blanco
+// normalizeWhitespace normalizes whitespace
 func (s *Sanitizer) normalizeWhitespace(input string) string {
-	// Reemplazar múltiples espacios con uno solo
+	// Replace multiple spaces with a single one
 	re := regexp.MustCompile(`\s+`)
 	return re.ReplaceAllString(input, " ")
 }
 
-// ValidateInput valida y sanitiza input genérico
+// ValidateInput validates and sanitizes generic input
 func (s *Sanitizer) ValidateInput(input string, maxLength int) (string, error) {
 	if len(input) > maxLength {
 		return "", ErrInputTooLong

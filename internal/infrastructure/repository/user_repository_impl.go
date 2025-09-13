@@ -10,21 +10,21 @@ import (
 	"github.com/brianvoe/gofakeit/v5"
 )
 
-// UserRepositoryImpl implementa UserRepository
+// UserRepositoryImpl implements UserRepository
 type UserRepositoryImpl struct {
-	// En una implementación real, aquí tendríamos una conexión a base de datos
+	// In a real implementation, here we would have a database connection
 }
 
-// NewUserRepositoryImpl crea una nueva instancia de UserRepositoryImpl
+// NewUserRepositoryImpl creates a new instance of UserRepositoryImpl
 func NewUserRepositoryImpl() repository.UserRepository {
 	return &UserRepositoryImpl{}
 }
 
-// GetAll obtiene todos los usuarios (simulado)
+// GetAll gets all users (simulated)
 func (r *UserRepositoryImpl) GetAll(ctx context.Context) ([]*entity.User, error) {
 	var users []*entity.User
 
-	// Generar usuarios simulados
+	// Generate simulated users
 	count := 1 + rand.Intn(10)
 	for i := 0; i < count; i++ {
 		user := entity.NewUser(gofakeit.UUID(), gofakeit.Name())
@@ -34,27 +34,27 @@ func (r *UserRepositoryImpl) GetAll(ctx context.Context) ([]*entity.User, error)
 	return users, nil
 }
 
-// GetByID obtiene un usuario por su ID (simulado)
+// GetByID gets a user by its ID (simulated)
 func (r *UserRepositoryImpl) GetByID(ctx context.Context, id string) (*entity.User, error) {
-	// En una implementación real, buscaríamos en la base de datos
-	// Por ahora generamos un usuario aleatorio
+	// In a real implementation, we would search in the database
+	// For now, we generate a random user
 	return entity.NewUser(gofakeit.UUID(), gofakeit.Name()), nil
 }
 
-// Create crea un nuevo usuario (simulado)
+// Create creates a new user (simulated)
 func (r *UserRepositoryImpl) Create(ctx context.Context, user *entity.User) error {
-	// En una implementación real, insertaríamos en la base de datos
+	// In a real implementation, we would insert into the database
 	return nil
 }
 
-// Update actualiza un usuario existente (simulado)
+// Update updates an existing user (simulated)
 func (r *UserRepositoryImpl) Update(ctx context.Context, user *entity.User) error {
-	// En una implementación real, actualizaríamos en la base de datos
+	// In a real implementation, we would update in the database
 	return nil
 }
 
-// Delete elimina un usuario (simulado)
+// Delete deletes a user (simulated)
 func (r *UserRepositoryImpl) Delete(ctx context.Context, id string) error {
-	// En una implementación real, eliminaríamos de la base de datos
+	// In a real implementation, we would delete from the database
 	return nil
 }

@@ -8,7 +8,7 @@ import (
 	"frontend-challenge/pkg/security"
 )
 
-// SecurityHandler maneja endpoints de seguridad
+// SecurityHandler handles security endpoints
 type SecurityHandler struct {
 	threatMonitor *security.ThreatMonitor
 	rateLimiter   interface {
@@ -22,7 +22,7 @@ type SecurityHandler struct {
 	}
 }
 
-// NewSecurityHandler crea una nueva instancia de SecurityHandler
+// NewSecurityHandler creates a new instance of SecurityHandler
 func NewSecurityHandler(threatMonitor *security.ThreatMonitor, rateLimiter interface {
 	GetStats() map[string]interface{}
 }, logRotator interface {
@@ -38,22 +38,22 @@ func NewSecurityHandler(threatMonitor *security.ThreatMonitor, rateLimiter inter
 	}
 }
 
-// GetSecurityStats maneja la petición GET /security/stats
+// GetSecurityStats handles the GET /security/stats request
 func (h *SecurityHandler) GetSecurityStats(w http.ResponseWriter, r *http.Request) {
-	// Agregar headers de seguridad
+	// Add security headers
 	h.addSecurityHeaders(w)
 
-	// Obtener estadísticas
+	// Get statistics
 	threatStats := h.threatMonitor.GetThreatStats()
 	rateLimitStats := h.rateLimiter.GetStats()
 	logStats, err := h.logRotator.GetLogStats()
 	if err != nil {
-		http.Error(w, "Error al obtener estadísticas de logs", http.StatusInternalServerError)
+		http.Error(w, "Error getting log statistics", http.StatusInternalServerError)
 		return
 	}
 	cacheStats := h.cache.GetStats()
 
-	// Combinar estadísticas
+	// Combine statistics
 	stats := map[string]interface{}{
 		"threats":     threatStats,
 		"rate_limits": rateLimitStats,
@@ -64,18 +64,18 @@ func (h *SecurityHandler) GetSecurityStats(w http.ResponseWriter, r *http.Reques
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(stats); err != nil {
-		http.Error(w, "Error al codificar respuesta", http.StatusInternalServerError)
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 		return
 	}
 }
 
-// addSecurityHeaders añade headers de seguridad
+// addSecurityHeaders adds security headers
 func (h *SecurityHandler) addSecurityHeaders(w http.ResponseWriter) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("X-Frame-Options", "DENY")
 	w.Header().Set("X-XSS-Protection", "1; mode=block")
 	w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
-	w.Header().Set("Access-Control-Allow-Origin", "*") // TODO: Restringir en producción
+	w.Header().Set("Access-Control-Allow-Origin", "*") // TODO: Restrict in production
 	w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 }

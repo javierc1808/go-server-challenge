@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// RateLimiter implementa rate limiting por IP
+// RateLimiter implements per-IP rate limiting
 type RateLimiter struct {
 	requests map[string][]time.Time
 	mutex    sync.RWMutex
@@ -14,7 +14,7 @@ type RateLimiter struct {
 	window   time.Duration
 }
 
-// NewRateLimiter crea un nuevo RateLimiter
+// NewRateLimiter creates a new RateLimiter
 func NewRateLimiter(limit int, window time.Duration) *RateLimiter {
 	rl := &RateLimiter{
 		requests: make(map[string][]time.Time),
@@ -22,18 +22,18 @@ func NewRateLimiter(limit int, window time.Duration) *RateLimiter {
 		window:   window,
 	}
 
-	// Limpiar requests antiguos cada minuto
+	// Cleanup old requests every minute
 	go rl.cleanup()
 
 	return rl
 }
 
-// Middleware retorna el middleware de rate limiting
+// Middleware returns the rate limiting middleware
 func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		clientIP := r.RemoteAddr
 
-		// Obtener IP real si está detrás de proxy
+		// Get real IP if behind a proxy
 		if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
 			clientIP = forwarded
 		} else if realIP := r.Header.Get("X-Real-IP"); realIP != "" {
@@ -49,7 +49,7 @@ func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
 	})
 }
 
-// allowRequest verifica si se permite la petición
+// allowRequest checks if the request is allowed
 func (rl *RateLimiter) allowRequest(clientIP string) bool {
 	rl.mutex.Lock()
 	defer rl.mutex.Unlock()
@@ -57,10 +57,10 @@ func (rl *RateLimiter) allowRequest(clientIP string) bool {
 	now := time.Now()
 	cutoff := now.Add(-rl.window)
 
-	// Obtener requests existentes para esta IP
+	// Get existing requests for this IP
 	requests := rl.requests[clientIP]
 
-	// Filtrar requests dentro de la ventana de tiempo
+	// Filter requests within the time window
 	var validRequests []time.Time
 	for _, reqTime := range requests {
 		if reqTime.After(cutoff) {
@@ -68,19 +68,19 @@ func (rl *RateLimiter) allowRequest(clientIP string) bool {
 		}
 	}
 
-	// Verificar si excede el límite
+	// Check if it exceeds the limit
 	if len(validRequests) >= rl.limit {
 		return false
 	}
 
-	// Añadir la nueva petición
+	// Add the new request
 	validRequests = append(validRequests, now)
 	rl.requests[clientIP] = validRequests
 
 	return true
 }
 
-// cleanup limpia requests antiguos
+// cleanup removes old requests
 func (rl *RateLimiter) cleanup() {
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
@@ -108,7 +108,7 @@ func (rl *RateLimiter) cleanup() {
 	}
 }
 
-// GetStats retorna estadísticas del rate limiter
+// GetStats returns rate limiter statistics
 func (rl *RateLimiter) GetStats() map[string]interface{} {
 	rl.mutex.RLock()
 	defer rl.mutex.RUnlock()

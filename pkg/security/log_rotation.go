@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// LogRotator maneja la rotación de logs
+// LogRotator handles log rotation
 type LogRotator struct {
 	logDir      string
 	maxFiles    int
@@ -17,7 +17,7 @@ type LogRotator struct {
 	rotateDaily bool
 }
 
-// NewLogRotator crea una nueva instancia de LogRotator
+// NewLogRotator creates a new instance of LogRotator
 func NewLogRotator(logDir string, maxFiles int, maxSize int64, rotateDaily bool) *LogRotator {
 	return &LogRotator{
 		logDir:      logDir,
@@ -27,32 +27,32 @@ func NewLogRotator(logDir string, maxFiles int, maxSize int64, rotateDaily bool)
 	}
 }
 
-// RotateLogs rota los logs según las reglas configuradas
+// RotateLogs rotates logs according to the configured rules
 func (lr *LogRotator) RotateLogs() error {
-	// Crear directorio si no existe
+	// Create directory if it does not exist
 	if err := os.MkdirAll(lr.logDir, 0755); err != nil {
 		return err
 	}
 
-	// Obtener archivos de log
+	// Get log files
 	files, err := lr.getLogFiles()
 	if err != nil {
 		return err
 	}
 
-	// Rotar por tamaño si es necesario
+	// Rotate by size if necessary
 	if err := lr.rotateBySize(files); err != nil {
 		return err
 	}
 
-	// Rotar por fecha si está habilitado
+	// Rotate by date if enabled
 	if lr.rotateDaily {
 		if err := lr.rotateByDate(files); err != nil {
 			return err
 		}
 	}
 
-	// Limpiar archivos antiguos
+	// Clean up old files
 	if err := lr.cleanupOldFiles(files); err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func (lr *LogRotator) RotateLogs() error {
 	return nil
 }
 
-// getLogFiles obtiene la lista de archivos de log
+// getLogFiles gets the list of log files
 func (lr *LogRotator) getLogFiles() ([]os.FileInfo, error) {
 	entries, err := os.ReadDir(lr.logDir)
 	if err != nil {
@@ -78,7 +78,7 @@ func (lr *LogRotator) getLogFiles() ([]os.FileInfo, error) {
 		}
 	}
 
-	// Ordenar por fecha de modificación (más reciente primero)
+	// Sort by modification date (most recent first)
 	sort.Slice(files, func(i, j int) bool {
 		return files[i].ModTime().After(files[j].ModTime())
 	})
@@ -86,7 +86,7 @@ func (lr *LogRotator) getLogFiles() ([]os.FileInfo, error) {
 	return files, nil
 }
 
-// rotateBySize rota logs por tamaño
+// rotateBySize rotates logs by size
 func (lr *LogRotator) rotateBySize(files []os.FileInfo) error {
 	for _, file := range files {
 		if file.Size() > lr.maxSize {
@@ -102,12 +102,12 @@ func (lr *LogRotator) rotateBySize(files []os.FileInfo) error {
 	return nil
 }
 
-// rotateByDate rota logs por fecha
+// rotateByDate rotates logs by date
 func (lr *LogRotator) rotateByDate(files []os.FileInfo) error {
 	now := time.Now()
 
 	for _, file := range files {
-		// Solo rotar archivos del día anterior
+		// Only rotate files from the previous day
 		if now.Sub(file.ModTime()) > 24*time.Hour {
 			oldPath := filepath.Join(lr.logDir, file.Name())
 			newPath := lr.getRotatedFileName(oldPath)
@@ -121,13 +121,13 @@ func (lr *LogRotator) rotateByDate(files []os.FileInfo) error {
 	return nil
 }
 
-// cleanupOldFiles elimina archivos antiguos
+// cleanupOldFiles deletes old files
 func (lr *LogRotator) cleanupOldFiles(files []os.FileInfo) error {
 	if len(files) <= lr.maxFiles {
 		return nil
 	}
 
-	// Eliminar archivos más antiguos
+	// Delete oldest files
 	for i := lr.maxFiles; i < len(files); i++ {
 		filePath := filepath.Join(lr.logDir, files[i].Name())
 		if err := os.Remove(filePath); err != nil {
@@ -138,7 +138,7 @@ func (lr *LogRotator) cleanupOldFiles(files []os.FileInfo) error {
 	return nil
 }
 
-// getRotatedFileName genera el nombre del archivo rotado
+// getRotatedFileName generates the name of the rotated file
 func (lr *LogRotator) getRotatedFileName(originalPath string) string {
 	dir := filepath.Dir(originalPath)
 	base := filepath.Base(originalPath)
@@ -149,7 +149,7 @@ func (lr *LogRotator) getRotatedFileName(originalPath string) string {
 	return filepath.Join(dir, fmt.Sprintf("%s.%s%s", name, timestamp, ext))
 }
 
-// GetLogStats retorna estadísticas de los logs
+// GetLogStats returns log statistics
 func (lr *LogRotator) GetLogStats() (map[string]interface{}, error) {
 	files, err := lr.getLogFiles()
 	if err != nil {

@@ -7,13 +7,13 @@ import (
 	"frontend-challenge/internal/domain/repository"
 )
 
-// DocumentUsecase define los casos de uso para documentos
+// DocumentUsecase defines the use cases for documents
 type DocumentUsecase struct {
 	documentRepo repository.DocumentRepository
 	userRepo     repository.UserRepository
 }
 
-// NewDocumentUsecase crea una nueva instancia de DocumentUsecase
+// NewDocumentUsecase creates a new instance of DocumentUsecase
 func NewDocumentUsecase(documentRepo repository.DocumentRepository, userRepo repository.UserRepository) *DocumentUsecase {
 	return &DocumentUsecase{
 		documentRepo: documentRepo,
@@ -21,12 +21,12 @@ func NewDocumentUsecase(documentRepo repository.DocumentRepository, userRepo rep
 	}
 }
 
-// GetAllDocuments obtiene todos los documentos
+// GetAllDocuments retrieves all documents
 func (u *DocumentUsecase) GetAllDocuments(ctx context.Context) ([]*entity.Document, error) {
 	return u.documentRepo.GetAll(ctx)
 }
 
-// GetDocumentByID obtiene un documento por su ID
+// GetDocumentByID retrieves a document by its ID
 func (u *DocumentUsecase) GetDocumentByID(ctx context.Context, id string) (*entity.Document, error) {
 	if id == "" {
 		return nil, entity.ErrInvalidDocumentID
@@ -34,7 +34,7 @@ func (u *DocumentUsecase) GetDocumentByID(ctx context.Context, id string) (*enti
 	return u.documentRepo.GetByID(ctx, id)
 }
 
-// CreateDocument crea un nuevo documento
+// CreateDocument creates a new document
 func (u *DocumentUsecase) CreateDocument(ctx context.Context, document *entity.Document) error {
 	if err := document.Validate(); err != nil {
 		return err
@@ -42,7 +42,7 @@ func (u *DocumentUsecase) CreateDocument(ctx context.Context, document *entity.D
 	return u.documentRepo.Create(ctx, document)
 }
 
-// UpdateDocument actualiza un documento existente
+// UpdateDocument updates an existing document
 func (u *DocumentUsecase) UpdateDocument(ctx context.Context, document *entity.Document) error {
 	if err := document.Validate(); err != nil {
 		return err
@@ -50,7 +50,7 @@ func (u *DocumentUsecase) UpdateDocument(ctx context.Context, document *entity.D
 	return u.documentRepo.Update(ctx, document)
 }
 
-// DeleteDocument elimina un documento
+// DeleteDocument deletes a document
 func (u *DocumentUsecase) DeleteDocument(ctx context.Context, id string) error {
 	if id == "" {
 		return entity.ErrInvalidDocumentID

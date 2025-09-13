@@ -9,7 +9,7 @@ import (
 	"frontend-challenge/internal/domain/repository"
 )
 
-// MemoryCache implementa CacheRepository usando memoria
+// MemoryCache implements CacheRepository using in-memory storage
 type MemoryCache struct {
 	documents map[string]*entity.Document
 	mutex     sync.RWMutex
@@ -17,7 +17,7 @@ type MemoryCache struct {
 	expiry    map[string]time.Time
 }
 
-// NewMemoryCache crea una nueva instancia de MemoryCache
+// NewMemoryCache creates a new MemoryCache instance
 func NewMemoryCache(ttl time.Duration) repository.CacheRepository {
 	cache := &MemoryCache{
 		documents: make(map[string]*entity.Document),
@@ -25,13 +25,13 @@ func NewMemoryCache(ttl time.Duration) repository.CacheRepository {
 		expiry:    make(map[string]time.Time),
 	}
 
-	// Iniciar limpieza automática de elementos expirados
+	// Start automatic cleanup of expired entries
 	go cache.startCleanup()
 
 	return cache
 }
 
-// Set almacena un documento en el cache
+// Set stores a document in the cache
 func (c *MemoryCache) Set(ctx context.Context, key string, document *entity.Document) error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -42,7 +42,7 @@ func (c *MemoryCache) Set(ctx context.Context, key string, document *entity.Docu
 	return nil
 }
 
-// Get obtiene un documento del cache
+// Get retrieves a document from the cache
 func (c *MemoryCache) Get(ctx context.Context, key string) (*entity.Document, error) {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
@@ -52,7 +52,7 @@ func (c *MemoryCache) Get(ctx context.Context, key string) (*entity.Document, er
 		return nil, nil
 	}
 
-	// Verificar si ha expirado
+	// Check if it has expired
 	if time.Now().After(c.expiry[key]) {
 		return nil, nil
 	}
@@ -60,7 +60,7 @@ func (c *MemoryCache) Get(ctx context.Context, key string) (*entity.Document, er
 	return document, nil
 }
 
-// GetAll obtiene todos los documentos del cache
+// GetAll returns all documents from the cache
 func (c *MemoryCache) GetAll(ctx context.Context) ([]*entity.Document, error) {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
@@ -69,7 +69,7 @@ func (c *MemoryCache) GetAll(ctx context.Context) ([]*entity.Document, error) {
 	now := time.Now()
 
 	for key, document := range c.documents {
-		// Solo incluir documentos no expirados
+		// Include only non-expired documents
 		if now.Before(c.expiry[key]) {
 			documents = append(documents, document)
 		}
@@ -78,7 +78,7 @@ func (c *MemoryCache) GetAll(ctx context.Context) ([]*entity.Document, error) {
 	return documents, nil
 }
 
-// Delete elimina un documento del cache
+// Delete removes a document from the cache
 func (c *MemoryCache) Delete(ctx context.Context, key string) error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -89,7 +89,7 @@ func (c *MemoryCache) Delete(ctx context.Context, key string) error {
 	return nil
 }
 
-// Clear limpia todo el cache
+// Clear clears the entire cache
 func (c *MemoryCache) Clear(ctx context.Context) error {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -100,7 +100,7 @@ func (c *MemoryCache) Clear(ctx context.Context) error {
 	return nil
 }
 
-// Exists verifica si un documento existe en el cache
+// Exists checks if a document exists in the cache
 func (c *MemoryCache) Exists(ctx context.Context, key string) bool {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
@@ -110,11 +110,11 @@ func (c *MemoryCache) Exists(ctx context.Context, key string) bool {
 		return false
 	}
 
-	// Verificar si ha expirado
+	// Check if it has expired
 	return time.Now().Before(c.expiry[key])
 }
 
-// Count retorna el número de documentos en el cache
+// Count returns the number of documents in the cache
 func (c *MemoryCache) Count(ctx context.Context) int {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()
@@ -131,7 +131,7 @@ func (c *MemoryCache) Count(ctx context.Context) int {
 	return count
 }
 
-// startCleanup inicia la limpieza automática de elementos expirados
+// startCleanup starts the automatic cleanup of expired entries
 func (c *MemoryCache) startCleanup() {
 	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
@@ -141,7 +141,7 @@ func (c *MemoryCache) startCleanup() {
 	}
 }
 
-// cleanupExpired elimina elementos expirados del cache
+// cleanupExpired removes expired entries from the cache
 func (c *MemoryCache) cleanupExpired() {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -155,7 +155,7 @@ func (c *MemoryCache) cleanupExpired() {
 	}
 }
 
-// GetStats retorna estadísticas del cache
+// GetStats returns cache statistics
 func (c *MemoryCache) GetStats() map[string]interface{} {
 	c.mutex.RLock()
 	defer c.mutex.RUnlock()

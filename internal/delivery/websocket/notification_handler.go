@@ -13,20 +13,20 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// NotificationHandler maneja las conexiones WebSocket para notificaciones
+// NotificationHandler handles WebSocket connections for notifications
 type NotificationHandler struct {
 	notificationUsecase *usecase.NotificationUsecase
 	upgrader            websocket.Upgrader
 	hub                 *Hub
 }
 
-// NewNotificationHandler crea una nueva instancia de NotificationHandler
+// NewNotificationHandler creates a new NotificationHandler instances
 func NewNotificationHandler(notificationUsecase *usecase.NotificationUsecase) *NotificationHandler {
 	return &NotificationHandler{
 		notificationUsecase: notificationUsecase,
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
-				// TODO: Implementar validación de origen en producción
+				// TODO: Implement origin validation in production
 				return true
 			},
 		},
@@ -34,12 +34,12 @@ func NewNotificationHandler(notificationUsecase *usecase.NotificationUsecase) *N
 	}
 }
 
-// Hub expone el hub para inyectarlo si fuese necesario
+// Hub exposes the hub so it can be injected when needed
 func (h *NotificationHandler) Hub() *Hub { return h.hub }
 
-// HandleNotifications maneja las conexiones WebSocket para notificaciones
+// HandleNotifications upgrades and manages the WebSocket lifecycle
 func (h *NotificationHandler) HandleNotifications(w http.ResponseWriter, r *http.Request) {
-	// Agregar headers de seguridad
+	// Add security headers
 	h.addSecurityHeaders(w)
 
 	if r.Method == "OPTIONS" {
@@ -58,10 +58,9 @@ func (h *NotificationHandler) HandleNotifications(w http.ResponseWriter, r *http
 		conn.Close()
 	}()
 
-	// Si no vamos a emitir desde el servidor, mantener un fallback de fake
-	// go h.fallbackFakeNotifications(conn)
+	// No fake fallback notifications. The server emits only on create/update/delete events.
 
-	// Mantener la conexión abierta mientras el cliente no cierre
+	// Keep connection open until client closes it
 	for {
 		if _, _, err := conn.ReadMessage(); err != nil {
 			break
@@ -77,23 +76,24 @@ func (h *NotificationHandler) fallbackFakeNotifications(conn *websocket.Conn) {
 			gofakeit.Name(),
 			gofakeit.UUID(),
 			gofakeit.BeerName(),
+			"document.created.fake",
 		)
 
 		if err := conn.WriteJSON(notification); err != nil {
 			break
 		}
 
-		time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
+		time.Sleep(time.Duration(rand.Intn(30)) * time.Second)
 	}
 }
 
-// addSecurityHeaders añade headers de seguridad
+// addSecurityHeaders adds security headers
 func (h *NotificationHandler) addSecurityHeaders(w http.ResponseWriter) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("X-Frame-Options", "DENY")
 	w.Header().Set("X-XSS-Protection", "1; mode=block")
 	w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
-	w.Header().Set("Access-Control-Allow-Origin", "*") // TODO: Restringir en producción
+	w.Header().Set("Access-Control-Allow-Origin", "*") // TODO: Restrict in production
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 }

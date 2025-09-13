@@ -21,113 +21,117 @@ import (
 	"github.com/brianvoe/gofakeit/v5"
 )
 
+// buildHTTPHandler wires middlewares and routes
+func buildHTTPHandler(
+	threatMonitor *security.ThreatMonitor,
+	documentHandler *deliveryhttp.DocumentHandler,
+	notificationHandler *websocket.NotificationHandler,
+	securityHandler *deliveryhttp.SecurityHandler,
+	rateLimiter *middleware.RateLimiter,
+	requestValidator *middleware.RequestValidator,
+	securityHeaders *middleware.SecurityHeaders,
+) http.Handler {
+	base := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Threat monitoring
+		if threatMonitor.AnalyzeRequest(r) {
+			http.Error(w, "Access denied", http.StatusForbidden)
+			return
+		}
+
+		// Route requests
+		switch r.URL.Path {
+		case "/documents":
+			switch r.Method {
+			case "GET":
+				documentHandler.GetDocuments(w, r)
+			case "POST":
+				documentHandler.CreateDocument(w, r)
+			default:
+				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			}
+		case "/notifications":
+			notificationHandler.HandleNotifications(w, r)
+		case "/security/stats":
+			securityHandler.GetSecurityStats(w, r)
+		case "/health":
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("OK"))
+		default:
+			http.NotFound(w, r)
+		}
+	})
+
+	// Apply middlewares in order
+	return rateLimiter.Middleware(
+		requestValidator.Middleware(
+			securityHeaders.Middleware(base),
+		),
+	)
+}
+
 func main() {
-	// Cargar configuración
+	// Load configuration
 	cfg := config.Load()
 
-	// Inicializar logger
+	// Initialize logger
 	logger := logger.NewSimpleLogger()
 
-	// Inicializar logger de seguridad
+	// Initialize security logger
 	securityLogger, err := security.NewSecurityLogger("logs/security.log")
 	if err != nil {
-		logger.Error("Error al crear logger de seguridad", err)
+		logger.Error("Error creating security logger", err)
 		os.Exit(1)
 	}
 	defer securityLogger.Close()
 
-	// Inicializar monitoreo de amenazas
+	// Initialize threat monitoring
 	threatMonitor := security.NewThreatMonitor(securityLogger)
 
-	// Inicializar rotación de logs
-	logRotator := security.NewLogRotator("logs", 10, 10*1024*1024, true) // 10 archivos, 10MB, rotación diaria
+	// Initialize log rotation
+	logRotator := security.NewLogRotator("logs", 10, 10*1024*1024, true) // 10 files, 10MB, daily rotation
 	go func() {
 		ticker := time.NewTicker(time.Hour)
 		defer ticker.Stop()
 		for range ticker.C {
 			if err := logRotator.RotateLogs(); err != nil {
-				logger.Error("Error al rotar logs", err)
+				logger.Error("Error rotating logs", err)
 			}
 		}
 	}()
 
-	// Inicializar generadores de datos aleatorios
+	// Initialize random data generators
 	seed := time.Now().UnixNano()
 	rand.Seed(seed)
 	gofakeit.Seed(seed)
 
-	// Inicializar cache
-	cache := repository.NewMemoryCache(24 * time.Hour) // TTL de 24 horas
+	// Initialize cache
+	cache := repository.NewMemoryCache(24 * time.Hour) // 24 hour TTL
 
-	// Inicializar repositorios
+	// Initialize repositories
 	documentRepo := repository.NewDocumentRepositoryImpl(cache)
 	userRepo := repository.NewUserRepositoryImpl()
 	notificationRepo := repository.NewNotificationRepositoryImpl()
 
-	// Inicializar casos de uso
+	// Initialize use cases
 	documentUsecase := usecase.NewDocumentUsecase(documentRepo, userRepo)
 	notificationUsecase := usecase.NewNotificationUsecase(notificationRepo, documentRepo, userRepo)
 
-	// Inicializar handlers
+	// Initialize handlers
 	notificationHandler := websocket.NewNotificationHandler(notificationUsecase)
 	documentHandler := deliveryhttp.NewDocumentHandler(documentUsecase).WithNotifier(notificationHandler.Hub())
 
-	// Configurar middlewares de seguridad
-	rateLimiter := middleware.NewRateLimiter(100, time.Minute)      // 100 requests por minuto
-	requestValidator := middleware.NewRequestValidator(1024 * 1024) // 1MB máximo
-	securityHeaders := middleware.NewSecurityHeaders(true)          // Habilitar CSP
+	// Configure security middlewares
+	rateLimiter := middleware.NewRateLimiter(100, time.Minute)      // 100 requests per minute
+	requestValidator := middleware.NewRequestValidator(1024 * 1024) // 1MB max
+	securityHeaders := middleware.NewSecurityHeaders(true)          // Enable CSP
 	securityHandler := deliveryhttp.NewSecurityHandler(threatMonitor, rateLimiter, logRotator, cache)
 
-	// Configurar rutas con middlewares
+	// Configure routes with middlewares
 	mux := http.NewServeMux()
-
-	// Aplicar middlewares en orden
-	handler := rateLimiter.Middleware(
-		requestValidator.Middleware(
-			securityHeaders.Middleware(
-				http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					// Monitoreo de amenazas
-					if threatMonitor.AnalyzeRequest(r) {
-						http.Error(w, "Access denied", http.StatusForbidden)
-						return
-					}
-
-					// Enrutar peticiones
-					switch r.URL.Path {
-					case "/documents":
-						switch r.Method {
-						case "GET":
-							documentHandler.GetDocuments(w, r)
-						case "POST":
-							if r.Header.Get("Authorization") == "" {
-								http.Error(w, "Authorization header is required", http.StatusBadRequest)
-								return
-							}
-
-							documentHandler.CreateDocument(w, r)
-							// Emisión opcional desde aquí si tuviésemos datos de usuario
-							// hub.BroadcastNotification(...)
-						default:
-							http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
-						}
-					case "/notifications":
-						notificationHandler.HandleNotifications(w, r)
-					case "/security/stats":
-						securityHandler.GetSecurityStats(w, r)
-					case "/health":
-						w.WriteHeader(http.StatusOK)
-						w.Write([]byte("OK"))
-					default:
-						http.NotFound(w, r)
-					}
-				}),
-			),
-		),
-	)
-
+	handler := buildHTTPHandler(threatMonitor, documentHandler, notificationHandler, securityHandler, rateLimiter, requestValidator, securityHeaders)
 	mux.Handle("/", handler)
 
-	// Configurar servidor
+	// Configure server
 	server := &http.Server{
 		Addr:         cfg.ServerAddress,
 		Handler:      mux,
@@ -136,32 +140,32 @@ func main() {
 		IdleTimeout:  cfg.IdleTimeout,
 	}
 
-	// Canal para manejar señales del sistema
+	// Channel to handle system signals
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	// Iniciar servidor en goroutine
+	// Start server in goroutine
 	go func() {
-		logger.Info("Servidor iniciado en " + cfg.ServerAddress)
+		logger.Info("Server started at " + cfg.ServerAddress)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.Error("Error al iniciar servidor", err)
+			logger.Error("Error starting server", err)
 			os.Exit(1)
 		}
 	}()
 
-	// Esperar señal de terminación
+	// Wait for termination signal
 	<-done
-	logger.Info("Servidor deteniéndose...")
+	logger.Info("Server shutting down...")
 
-	// Crear contexto con timeout para el shutdown
+	// Create context with timeout for shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// Cerrar servidor gracefully
+	// Gracefully close server
 	if err := server.Shutdown(ctx); err != nil {
-		logger.Error("Error al cerrar servidor", err)
+		logger.Error("Error shutting down server", err)
 		os.Exit(1)
 	}
 
-	logger.Info("Servidor cerrado correctamente")
+	logger.Info("Server closed successfully")
 }

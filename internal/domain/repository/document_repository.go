@@ -6,20 +6,20 @@ import (
 	"frontend-challenge/internal/domain/entity"
 )
 
-// DocumentRepository define la interfaz para el repositorio de documentos
+// DocumentRepository defines the interface for the document repository
 type DocumentRepository interface {
-	// GetAll obtiene todos los documentos
+	// GetAll retrieves all documents
 	GetAll(ctx context.Context) ([]*entity.Document, error)
 
-	// GetByID obtiene un documento por su ID
+	// GetByID retrieves a document by its ID
 	GetByID(ctx context.Context, id string) (*entity.Document, error)
 
-	// Create crea un nuevo documento
+	// Create creates a new document
 	Create(ctx context.Context, document *entity.Document) error
 
-	// Update actualiza un documento existente
+	// Update updates an existing document
 	Update(ctx context.Context, document *entity.Document) error
 
-	// Delete elimina un documento
+	// Delete deletes a document
 	Delete(ctx context.Context, id string) error
 }

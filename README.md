@@ -11,9 +11,7 @@ Each notification is represented as a JSON document.
 Example notifications:
 
     {"Timestamp":"2020-08-12T07:30:08.28093+02:00","UserID":"3ffe27e5-fe2c-45ea-8b3c-879b757b0455","UserName":"Alicia Wolf","DocumentID":"f09acc46-3875-4eff-8831-10ccf3356420","DocumentTitle":"Edmund Fitzgerald Porter"}
-    {"Timestamp":"2020-08-12T07:30:08.281305+02:00","UserID":"fd525a6d-1255-4427-91fa-86af21e805d3","UserName":"Cindy Weissnat","DocumentID":"8d9b79cc-a48c-4f62-b385-607feb4276b8","DocumentTitle":"Schneider Aventinus"}
-    {"Timestamp":"2020-08-12T07:30:11.284554+02:00","UserID":"8233841d-18b0-4f18-a1c1-9b9e8a8532e8","UserName":"Otho Denesik","DocumentID":"7efbb4f3-2dfa-44ed-a7bf-a6fcd890f01d","DocumentTitle":"Trappistes Rochefort 10"}
-    {"Timestamp":"2020-08-12T07:30:12.288571+02:00","UserID":"09c49420-99ab-4fd8-81ec-f83328f0d6e1","UserName":"Cade Schumm","DocumentID":"77381dd5-15d8-4bfc-9981-31994ab8f7c3","DocumentTitle":"Samuel Smith’s Imperial IPA"}
+    ...
  
 
 ## Documents API 
@@ -51,48 +49,7 @@ Example response
             "UpdatedAt": "1952-02-29T22:21:13.817038244Z",
             "Version": "5.3.15"
         },
-        {
-            "Attachments": [
-                "Strong Ale",
-                "Stout",
-                "Dark Lager",
-                "Belgian Strong Ale"
-            ],
-            "Contributors": [
-                {
-                    "ID": "1bbb6853-390f-49aa-a002-fb60908f8b0e",
-                    "Name": "Hermann Lowe"
-                }
-            ],
-            "CreatedAt": "1993-11-12T00:55:44.438198299Z",
-            "ID": "d7e00994-75e6-48f1-b778-e5d31ead7136",
-            "Title": "Ten FIDY",
-            "UpdatedAt": "1946-04-15T06:09:44.564202073Z"
-            "Version": "5.1.15"
-        },
-        {
-            "Attachments": [
-                "Bock",
-                "English Pale Ale",
-                "Wood-aged Beer",
-                "Belgian And French Ale"
-            ],
-            "Contributors": [
-                {
-                    "ID": "de30f704-1102-40f4-8517-a0361378370c",
-                    "Name": "Velda Watsica"
-                },
-                {
-                    "ID": "f65b8ce0-1276-4a07-899c-a41387c9360c",
-                    "Name": "Helmer Hauck"
-                }
-            ],
-            "CreatedAt": "2007-12-11T02:35:33.701912202Z",
-            "ID": "fe6ad6ed-a5bd-480b-8688-fd3652b2a6d9",
-            "Title": "Orval Trappist Ale",
-            "UpdatedAt": "1972-01-02T13:12:29.948799707Z",
-            "Version": "1.3.1"
-        }
+        ...
     ]
 ```
 
@@ -106,6 +63,50 @@ By default, the server listen to `localhost:8080`, if needed change the listenin
 
     go run server.go -addr localhost:9090 
 
-# Security
 
-This simple server is not intended for production usage. The code has some security issues left intentionally for the challenge.  
+## Run with Cloudflare Tunnel
+
+This repository includes a script to run the server and expose it securely via a public HTTPS tunnel using Cloudflare Tunnel. This is useful for Expo/Android, where plain HTTP (localhost/127.0.0.1) may be blocked and SSL is required.
+
+### Requirements
+- Go installed (`go` in PATH)
+- `curl` installed
+- The script will try to install `cloudflared` automatically (Homebrew on macOS; apt/dnf/pacman or direct binary download on Linux). On Windows, WSL is recommended.
+
+### Basic usage
+```bash
+chmod +x scripts/run_with_tunnel.sh
+./scripts/run_with_tunnel.sh
+```
+
+By default it starts the server on `http://localhost:8080` and opens a tunnel. The console will display:
+- Public HTTPS URL: `https://<something>.trycloudflare.com`
+- Secure WebSocket (WSS): `wss://<something>.trycloudflare.com/notifications`
+
+### Choose port
+```bash
+PORT=8443 ./scripts/run_with_tunnel.sh
+```
+
+### Use it from your app (React Native / Expo)
+```javascript
+const BASE_URL = 'https://<your-subdomain>.trycloudflare.com';
+
+// REST
+const res = await fetch(`${BASE_URL}/documents`);
+
+// WebSocket
+const ws = new WebSocket(`${BASE_URL.replace('https', 'wss')}/notifications`);
+```
+
+### Stop the process
+Press Ctrl+C to close both the server and the tunnel.
+
+### Platform notes
+- macOS: uses Homebrew to install `cloudflared`. If you don't have Homebrew, install it from `https://brew.sh` or install `cloudflared` manually.
+- Linux: tries apt/dnf/pacman, and if not available, downloads the official binary automatically.
+- Windows: run the script from WSL or Git Bash. Alternatively, install `cloudflared` manually and run the server and tunnel separately.
+
+### Troubleshooting
+- If the tunnel URL doesn't show up, rerun the script and ensure the port is free (try a different `PORT`).
+- Ensure you have Internet connectivity so `cloudflared` can create the tunnel.

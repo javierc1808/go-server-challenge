@@ -5,21 +5,21 @@ import (
 	"os"
 )
 
-// Logger define la interfaz para logging
+// Logger defines the interface for logging
 type Logger interface {
 	Info(msg string)
 	Error(msg string, err error)
 	Debug(msg string)
 }
 
-// SimpleLogger implementa Logger con el logger estándar de Go
+// SimpleLogger implements Logger using Go's standard logger
 type SimpleLogger struct {
 	infoLogger  *log.Logger
 	errorLogger *log.Logger
 	debugLogger *log.Logger
 }
 
-// NewSimpleLogger crea una nueva instancia de SimpleLogger
+// NewSimpleLogger creates a new instance of SimpleLogger
 func NewSimpleLogger() Logger {
 	return &SimpleLogger{
 		infoLogger:  log.New(os.Stdout, "INFO: ", log.LstdFlags),
@@ -28,12 +28,12 @@ func NewSimpleLogger() Logger {
 	}
 }
 
-// Info registra un mensaje de información
+// Info logs an informational message
 func (l *SimpleLogger) Info(msg string) {
 	l.infoLogger.Println(msg)
 }
 
-// Error registra un mensaje de error
+// Error logs an error message
 func (l *SimpleLogger) Error(msg string, err error) {
 	if err != nil {
 		l.errorLogger.Printf("%s: %v", msg, err)
@@ -42,7 +42,7 @@ func (l *SimpleLogger) Error(msg string, err error) {
 	}
 }
 
-// Debug registra un mensaje de debug
+// Debug logs a debug message
 func (l *SimpleLogger) Debug(msg string) {
 	l.debugLogger.Println(msg)
 }

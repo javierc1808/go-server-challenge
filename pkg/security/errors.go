@@ -2,7 +2,7 @@ package security
 
 import "errors"
 
-// Errores de seguridad
+// Security errors
 var (
 	ErrInvalidEmail        = errors.New("invalid email format")
 	ErrInvalidUUID         = errors.New("invalid UUID format")

@@ -6,14 +6,14 @@ import (
 	"time"
 )
 
-// ThreatMonitor monitorea amenazas en tiempo real
+// ThreatMonitor monitors threats in real time
 type ThreatMonitor struct {
 	suspiciousIPs  map[string]*IPThreat
 	mutex          sync.RWMutex
 	securityLogger *SecurityLogger
 }
 
-// IPThreat representa información de amenaza de una IP
+// IPThreat represents threat information for an IP
 type IPThreat struct {
 	IP              string
 	FirstSeen       time.Time
@@ -24,27 +24,27 @@ type IPThreat struct {
 	ThreatLevel     string
 }
 
-// NewThreatMonitor crea una nueva instancia de ThreatMonitor
+// NewThreatMonitor creates a new instance of ThreatMonitor
 func NewThreatMonitor(securityLogger *SecurityLogger) *ThreatMonitor {
 	tm := &ThreatMonitor{
 		suspiciousIPs:  make(map[string]*IPThreat),
 		securityLogger: securityLogger,
 	}
 
-	// Limpiar IPs antiguas cada hora
+	// Clean up old IPs every hour
 	go tm.cleanup()
 
 	return tm
 }
 
-// AnalyzeRequest analiza una petición en busca de amenazas
+// AnalyzeRequest analyzes a request for threats
 func (tm *ThreatMonitor) AnalyzeRequest(r *http.Request) bool {
 	clientIP := tm.getClientIP(r)
 
 	tm.mutex.Lock()
 	defer tm.mutex.Unlock()
 
-	// Obtener o crear información de la IP
+	// Get or create information for the IP
 	threat, exists := tm.suspiciousIPs[clientIP]
 	if !exists {
 		threat = &IPThreat{
@@ -59,14 +59,14 @@ func (tm *ThreatMonitor) AnalyzeRequest(r *http.Request) bool {
 	threat.LastSeen = time.Now()
 	threat.RequestCount++
 
-	// Analizar patrones sospechosos
+	// Analyze suspicious patterns
 	isSuspicious := tm.detectSuspiciousPatterns(r, threat)
 
 	if isSuspicious {
 		threat.SuspiciousCount++
 		tm.updateThreatLevel(threat)
 
-		// Log del evento sospechoso
+		// Log the suspicious event
 		tm.securityLogger.LogSuspiciousActivity(r, "Suspicious pattern detected", map[string]interface{}{
 			"threat_level":     threat.ThreatLevel,
 			"request_count":    threat.RequestCount,
@@ -74,30 +74,30 @@ func (tm *ThreatMonitor) AnalyzeRequest(r *http.Request) bool {
 		})
 	}
 
-	// Bloquear IPs con amenaza alta
+	// Block IPs with high threat
 	return threat.ThreatLevel == "HIGH" && threat.Blocked
 }
 
-// detectSuspiciousPatterns detecta patrones sospechosos
+// detectSuspiciousPatterns detects suspicious patterns
 func (tm *ThreatMonitor) detectSuspiciousPatterns(r *http.Request, threat *IPThreat) bool {
 	suspicious := false
 
-	// Detectar User-Agent sospechoso
+	// Detect suspicious User-Agent
 	if tm.isSuspiciousUserAgent(r.UserAgent()) {
 		suspicious = true
 	}
 
-	// Detectar requests a rutas sensibles
+	// Detect requests to sensitive routes
 	if tm.isSensitivePath(r.URL.Path) {
 		suspicious = true
 	}
 
-	// Detectar demasiadas peticiones en poco tiempo
+	// Detect too many requests in a short time
 	if threat.RequestCount > 100 && time.Since(threat.FirstSeen) < 5*time.Minute {
 		suspicious = true
 	}
 
-	// Detectar patrones de ataque comunes
+	// Detect common attack patterns
 	if tm.detectAttackPatterns(r) {
 		suspicious = true
 	}
@@ -105,7 +105,7 @@ func (tm *ThreatMonitor) detectSuspiciousPatterns(r *http.Request, threat *IPThr
 	return suspicious
 }
 
-// isSuspiciousUserAgent verifica si el User-Agent es sospechoso
+// isSuspiciousUserAgent checks if the User-Agent is suspicious
 func (tm *ThreatMonitor) isSuspiciousUserAgent(userAgent string) bool {
 	suspiciousPatterns := []string{
 		"sqlmap",
@@ -134,7 +134,7 @@ func (tm *ThreatMonitor) isSuspiciousUserAgent(userAgent string) bool {
 	return false
 }
 
-// isSensitivePath verifica si la ruta es sensible
+// isSensitivePath checks if the path is sensitive
 func (tm *ThreatMonitor) isSensitivePath(path string) bool {
 	sensitivePaths := []string{
 		"/admin",
@@ -161,9 +161,9 @@ func (tm *ThreatMonitor) isSensitivePath(path string) bool {
 	return false
 }
 
-// detectAttackPatterns detecta patrones de ataque comunes
+// detectAttackPatterns detects common attack patterns
 func (tm *ThreatMonitor) detectAttackPatterns(r *http.Request) bool {
-	// Detectar intentos de inyección SQL
+	// Detect SQL injection attempts
 	query := r.URL.RawQuery
 	if containsIgnoreCase(query, "union") ||
 		containsIgnoreCase(query, "select") ||
@@ -172,14 +172,14 @@ func (tm *ThreatMonitor) detectAttackPatterns(r *http.Request) bool {
 		return true
 	}
 
-	// Detectar intentos de XSS
+	// Detect XSS attempts
 	if containsIgnoreCase(query, "<script") ||
 		containsIgnoreCase(query, "javascript:") ||
 		containsIgnoreCase(query, "onload=") {
 		return true
 	}
 
-	// Detectar intentos de path traversal
+	// Detect path traversal attempts
 	if containsIgnoreCase(query, "../") ||
 		containsIgnoreCase(query, "..\\") ||
 		containsIgnoreCase(query, "%2e%2e") {
@@ -189,7 +189,7 @@ func (tm *ThreatMonitor) detectAttackPatterns(r *http.Request) bool {
 	return false
 }
 
-// updateThreatLevel actualiza el nivel de amenaza
+// updateThreatLevel updates the threat level
 func (tm *ThreatMonitor) updateThreatLevel(threat *IPThreat) {
 	if threat.SuspiciousCount >= 10 {
 		threat.ThreatLevel = "HIGH"
@@ -201,7 +201,7 @@ func (tm *ThreatMonitor) updateThreatLevel(threat *IPThreat) {
 	}
 }
 
-// getClientIP obtiene la IP real del cliente
+// getClientIP gets the real client IP
 func (tm *ThreatMonitor) getClientIP(r *http.Request) string {
 	if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
 		return forwarded
@@ -212,7 +212,7 @@ func (tm *ThreatMonitor) getClientIP(r *http.Request) string {
 	return r.RemoteAddr
 }
 
-// cleanup limpia IPs antiguas
+// cleanup cleans up old IPs
 func (tm *ThreatMonitor) cleanup() {
 	ticker := time.NewTicker(time.Hour)
 	defer ticker.Stop()
@@ -229,7 +229,7 @@ func (tm *ThreatMonitor) cleanup() {
 	}
 }
 
-// GetThreatStats retorna estadísticas de amenazas
+// GetThreatStats returns threat statistics
 func (tm *ThreatMonitor) GetThreatStats() map[string]interface{} {
 	tm.mutex.RLock()
 	defer tm.mutex.RUnlock()
@@ -262,7 +262,7 @@ func (tm *ThreatMonitor) GetThreatStats() map[string]interface{} {
 	}
 }
 
-// containsIgnoreCase verifica si una cadena contiene otra (case insensitive)
+// containsIgnoreCase checks if a string contains another (case insensitive)
 func containsIgnoreCase(s, substr string) bool {
 	return len(s) >= len(substr) &&
 		(s == substr ||
@@ -272,7 +272,7 @@ func containsIgnoreCase(s, substr string) bool {
 					containsSubstring(s, substr)))
 }
 
-// containsSubstring verifica si s contiene substr (case insensitive)
+// containsSubstring checks if s contains substr (case insensitive)
 func containsSubstring(s, substr string) bool {
 	if len(substr) == 0 {
 		return true

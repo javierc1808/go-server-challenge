@@ -2,7 +2,7 @@ package entity
 
 import "time"
 
-// Document representa un documento en el dominio
+// Document represents a document in the domain
 type Document struct {
 	ID           string    `json:"id"`
 	Title        string    `json:"title"`
@@ -13,7 +13,7 @@ type Document struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-// NewDocument crea una nueva instancia de Document
+// NewDocument creates a new instance of Document
 func NewDocument(id, title, version string) *Document {
 	now := time.Now()
 	return &Document{
@@ -25,19 +25,19 @@ func NewDocument(id, title, version string) *Document {
 	}
 }
 
-// AddContributor añade un contribuidor al documento
+// AddContributor adds a contributor to the document
 func (d *Document) AddContributor(user User) {
 	d.Contributors = append(d.Contributors, user)
 	d.UpdatedAt = time.Now()
 }
 
-// AddAttachment añade un adjunto al documento
+// AddAttachment adds an attachment to the document
 func (d *Document) AddAttachment(attachment string) {
 	d.Attachments = append(d.Attachments, attachment)
 	d.UpdatedAt = time.Now()
 }
 
-// Validate valida los datos del documento
+// Validate validates the document's data
 func (d *Document) Validate() error {
 	if d.ID == "" {
 		return ErrInvalidDocumentID

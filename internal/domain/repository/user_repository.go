@@ -6,20 +6,20 @@ import (
 	"frontend-challenge/internal/domain/entity"
 )
 
-// UserRepository define la interfaz para el repositorio de usuarios
+// UserRepository defines the interface for the user repository
 type UserRepository interface {
-	// GetAll obtiene todos los usuarios
+	// GetAll retrieves all users
 	GetAll(ctx context.Context) ([]*entity.User, error)
 
-	// GetByID obtiene un usuario por su ID
+	// GetByID retrieves a user by its ID
 	GetByID(ctx context.Context, id string) (*entity.User, error)
 
-	// Create crea un nuevo usuario
+	// Create creates a new user
 	Create(ctx context.Context, user *entity.User) error
 
-	// Update actualiza un usuario existente
+	// Update updates an existing user
 	Update(ctx context.Context, user *entity.User) error
 
-	// Delete elimina un usuario
+	// Delete deletes a user
 	Delete(ctx context.Context, id string) error
 }

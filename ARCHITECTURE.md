@@ -1,4 +1,4 @@
-# Diagrama de Clean Architecture
+# Clean Architecture Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -41,63 +41,63 @@
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## Flujo de Dependencias
+## Dependency Flow
 
-1. **Delivery Layer** → **Use Case Layer** → **Domain Layer**
-2. **Infrastructure Layer** → **Domain Layer** (implementa interfaces)
-3. **Use Case Layer** → **Domain Layer** (usa interfaces)
+1. Delivery Layer → Use Case Layer → Domain Layer
+2. Infrastructure Layer → Domain Layer (implements interfaces)
+3. Use Case Layer → Domain Layer (uses interfaces)
 
-## Principios Aplicados
+## Applied Principles
 
-### ✅ Inversión de Dependencias
-- Las capas internas no conocen las externas
-- Las interfaces están en el dominio
-- Las implementaciones están en infraestructura
+### ✅ Dependency Inversion
+- Inner layers do not know outer layers
+- Interfaces live in the domain layer
+- Implementations live in infrastructure
 
-### ✅ Separación de Responsabilidades
-- Cada capa tiene una responsabilidad específica
-- El dominio contiene solo lógica de negocio
-- Los casos de uso orquestan el flujo de datos
+### ✅ Separation of Concerns
+- Each layer has a single responsibility
+- Domain contains only business logic
+- Use cases orchestrate data flow
 
-### ✅ Testabilidad
-- Cada capa puede ser probada independientemente
-- Las dependencias se pueden mockear
-- La lógica de negocio está aislada
+### ✅ Testability
+- Each layer can be tested independently
+- Dependencies can be mocked
+- Business logic is isolated
 
-## Estructura de Archivos
+## File Structure
 
 ```
 internal/
-├── domain/                    # 🎯 NÚCLEO DEL NEGOCIO
-│   ├── entity/               # Entidades del dominio
+├── domain/                    # 🎯 BUSINESS CORE
+│   ├── entity/               # Domain entities
 │   │   ├── user.go
 │   │   ├── document.go
 │   │   ├── notification.go
 │   │   └── errors.go
-│   └── repository/           # Interfaces de repositorios
+│   └── repository/           # Repository interfaces
 │       ├── user_repository.go
 │       ├── document_repository.go
 │       └── notification_repository.go
-├── usecase/                  # 🔄 LÓGICA DE APLICACIÓN
+├── usecase/                  # 🔄 APPLICATION LOGIC
 │   ├── document_usecase.go
 │   └── notification_usecase.go
-├── infrastructure/           # 🔧 IMPLEMENTACIONES
+├── infrastructure/           # 🔧 IMPLEMENTATIONS
 │   └── repository/
 │       ├── user_repository_impl.go
 │       ├── document_repository_impl.go
 │       └── notification_repository_impl.go
-└── delivery/                 # 🌐 PUNTOS DE ENTRADA
+└── delivery/                 # 🌐 ENTRY POINTS
     ├── http/
     │   └── document_handler.go
     └── websocket/
         └── notification_handler.go
 ```
 
-## Beneficios de esta Arquitectura
+## Benefits of this Architecture
 
-1. **Mantenibilidad**: Código organizado y fácil de mantener
-2. **Escalabilidad**: Fácil añadir nuevas funcionalidades
-3. **Testabilidad**: Cada componente es testeable independientemente
-4. **Flexibilidad**: Fácil cambiar implementaciones
-5. **Independencia**: El dominio no depende de frameworks externos
-6. **Reutilización**: Los casos de uso pueden ser reutilizados
+1. Maintainability: organized and easy to evolve
+2. Scalability: easy to add new features
+3. Testability: each component is independently testable
+4. Flexibility: implementations are swappable
+5. Independence: domain does not depend on frameworks
+6. Reusability: use cases can be reused

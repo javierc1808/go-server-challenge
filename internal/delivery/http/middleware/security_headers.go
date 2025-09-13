@@ -4,13 +4,13 @@ import (
 	"net/http"
 )
 
-// SecurityHeaders implementa headers de seguridad avanzados
+// SecurityHeaders implements advanced security headers
 type SecurityHeaders struct {
 	enableCSP bool
 	cspPolicy string
 }
 
-// NewSecurityHeaders crea una nueva instancia de SecurityHeaders
+// NewSecurityHeaders creates a new SecurityHeaders instance
 func NewSecurityHeaders(enableCSP bool) *SecurityHeaders {
 	return &SecurityHeaders{
 		enableCSP: enableCSP,
@@ -18,10 +18,10 @@ func NewSecurityHeaders(enableCSP bool) *SecurityHeaders {
 	}
 }
 
-// Middleware retorna el middleware de headers de seguridad
+// Middleware returns the security headers middleware
 func (sh *SecurityHeaders) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Headers básicos de seguridad
+		// Basic security headers
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("X-Frame-Options", "DENY")
 		w.Header().Set("X-XSS-Protection", "1; mode=block")
@@ -33,13 +33,13 @@ func (sh *SecurityHeaders) Middleware(next http.Handler) http.Handler {
 			w.Header().Set("Content-Security-Policy", sh.cspPolicy)
 		}
 
-		// Headers adicionales de seguridad
+		// Additional security headers
 		w.Header().Set("X-DNS-Prefetch-Control", "off")
 		w.Header().Set("X-Download-Options", "noopen")
 		w.Header().Set("X-Permitted-Cross-Domain-Policies", "none")
 
-		// CORS restrictivo (debería ser configurado por dominio)
-		w.Header().Set("Access-Control-Allow-Origin", "*") // TODO: Restringir en producción
+		// Restrictive CORS (should be configured per domain)
+		w.Header().Set("Access-Control-Allow-Origin", "*") // TODO: Restrict in production
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		w.Header().Set("Access-Control-Max-Age", "86400")

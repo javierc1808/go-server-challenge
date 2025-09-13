@@ -10,50 +10,50 @@ import (
 	"github.com/brianvoe/gofakeit/v5"
 )
 
-// DocumentRepositoryImpl implementa DocumentRepository
+// DocumentRepositoryImpl implements DocumentRepository
 type DocumentRepositoryImpl struct {
 	cache repository.CacheRepository
-	// En una implementación real, aquí tendríamos una conexión a base de datos
-	// Por ahora simulamos con datos en memoria
+	// In a real implementation, this would hold a database connection
+	// For now we simulate with in-memory data
 }
 
-// NewDocumentRepositoryImpl crea una nueva instancia de DocumentRepositoryImpl
+// NewDocumentRepositoryImpl creates a new DocumentRepositoryImpl instance
 func NewDocumentRepositoryImpl(cache repository.CacheRepository) repository.DocumentRepository {
 	return &DocumentRepositoryImpl{
 		cache: cache,
 	}
 }
 
-// GetAll obtiene todos los documentos (simulado)
+// GetAll returns all documents (simulated)
 func (r *DocumentRepositoryImpl) GetAll(ctx context.Context) ([]*entity.Document, error) {
-	// Primero intentar obtener del cache
+	// First try to fetch from cache
 	cachedDocs, err := r.cache.GetAll(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// Si hay documentos en cache, devolverlos
+	// If there are cached documents, return them
 	if len(cachedDocs) > 0 {
 		return cachedDocs, nil
 	}
 
-	// Si no hay documentos en cache, generar algunos simulados
+	// If not cached, generate some simulated ones
 	var documents []*entity.Document
 	count := 1 + rand.Intn(20)
 	for i := 0; i < count; i++ {
 		doc := r.generateRandomDocument()
 		documents = append(documents, doc)
 
-		// Almacenar en cache
+		// Store in cache
 		r.cache.Set(ctx, doc.ID, doc)
 	}
 
 	return documents, nil
 }
 
-// GetByID obtiene un documento por su ID (simulado)
+// GetByID returns a document by ID (simulated)
 func (r *DocumentRepositoryImpl) GetByID(ctx context.Context, id string) (*entity.Document, error) {
-	// Primero intentar obtener del cache
+	// First try to fetch from cache
 	cachedDoc, err := r.cache.Get(ctx, id)
 	if err != nil {
 		return nil, err
@@ -63,35 +63,35 @@ func (r *DocumentRepositoryImpl) GetByID(ctx context.Context, id string) (*entit
 		return cachedDoc, nil
 	}
 
-	// Si no está en cache, generar uno aleatorio
+	// If not cached, generate a random one
 	doc := r.generateRandomDocument()
 	doc.ID = id // Usar el ID solicitado
 
-	// Almacenar en cache
+	// Store in cache
 	r.cache.Set(ctx, id, doc)
 
 	return doc, nil
 }
 
-// Create crea un nuevo documento
+// Create creates a new document
 func (r *DocumentRepositoryImpl) Create(ctx context.Context, document *entity.Document) error {
-	// Almacenar en cache
+	// Store in cache
 	return r.cache.Set(ctx, document.ID, document)
 }
 
-// Update actualiza un documento existente (simulado)
+// Update updates an existing document (simulated)
 func (r *DocumentRepositoryImpl) Update(ctx context.Context, document *entity.Document) error {
-	// Actualizar en cache
+	// Update in cache
 	return r.cache.Set(ctx, document.ID, document)
 }
 
-// Delete elimina un documento (simulado)
+// Delete removes a document (simulated)
 func (r *DocumentRepositoryImpl) Delete(ctx context.Context, id string) error {
-	// Eliminar del cache
+	// Remove from cache
 	return r.cache.Delete(ctx, id)
 }
 
-// generateRandomDocument genera un documento aleatorio para simulación
+// generateRandomDocument generates a random document for simulation
 func (r *DocumentRepositoryImpl) generateRandomDocument() *entity.Document {
 	doc := entity.NewDocument(
 		gofakeit.UUID(),
@@ -99,13 +99,13 @@ func (r *DocumentRepositoryImpl) generateRandomDocument() *entity.Document {
 		gofakeit.AppVersion(),
 	)
 
-	// Agregar adjuntos aleatorios
+	// Add random attachments
 	attachmentCount := 1 + rand.Intn(4)
 	for j := 0; j < attachmentCount; j++ {
 		doc.AddAttachment(gofakeit.BeerStyle())
 	}
 
-	// Agregar contribuidores aleatorios
+	// Add random contributors
 	contributorCount := 1 + rand.Intn(4)
 	for j := 0; j < contributorCount; j++ {
 		user := entity.NewUser(gofakeit.UUID(), gofakeit.Name())
