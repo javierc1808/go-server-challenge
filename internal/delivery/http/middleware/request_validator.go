@@ -20,6 +20,12 @@ func NewRequestValidator(maxBodySize int64) *RequestValidator {
 	}
 }
 
+func isWebSocketHandshake(r *http.Request) bool {
+	conn := strings.ToLower(r.Header.Get("Connection"))
+	upg := strings.ToLower(r.Header.Get("Upgrade"))
+	return strings.Contains(conn, "upgrade") && upg == "websocket"
+}
+
 // Middleware returns the request validation middleware
 func (rv *RequestValidator) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -31,6 +37,11 @@ func (rv *RequestValidator) Middleware(next http.Handler) http.Handler {
 
 		// Limit the size of the request body read
 		r.Body = http.MaxBytesReader(w, r.Body, rv.maxBodySize)
+
+		if isWebSocketHandshake(r) {
+			next.ServeHTTP(w, r)
+			return
+		}
 
 		// Validate important headers
 		if !rv.validateHeaders(r) {

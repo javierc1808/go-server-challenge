@@ -59,6 +59,7 @@ func (h *NotificationHandler) HandleNotifications(w http.ResponseWriter, r *http
 	}()
 
 	// No fake fallback notifications. The server emits only on create/update/delete events.
+	h.fallbackFakeNotifications(conn)
 
 	// Keep connection open until client closes it
 	for {

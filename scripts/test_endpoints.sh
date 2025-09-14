@@ -21,7 +21,7 @@ PASSED_TESTS=0
 FAILED_TESTS=0
 
 # Basic auth config
-BASIC_USER="batman@brucewayne.com"
+BASIC_USER="Bruce Wayne"
 BASIC_ID="17f83f64-e3e8-40e1-9720-b3ee5d0523ce"
 BASIC_AUTH=$(printf "%s:%s" "$BASIC_USER" "$BASIC_ID" | base64)
 
