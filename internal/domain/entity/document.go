@@ -9,8 +9,8 @@ type Document struct {
 	Version      string    `json:"version"`
 	Attachments  []string  `json:"attachments"`
 	Contributors []User    `json:"contributors"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
 }
 
 // NewDocument creates a new instance of Document

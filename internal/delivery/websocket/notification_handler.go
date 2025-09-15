@@ -2,7 +2,6 @@ package websocket
 
 import (
 	"log"
-	"math/rand"
 	"net/http"
 	"time"
 
@@ -84,7 +83,7 @@ func (h *NotificationHandler) fallbackFakeNotifications(conn *websocket.Conn) {
 			break
 		}
 
-		time.Sleep(time.Duration(rand.Intn(30)) * time.Second)
+		time.Sleep(time.Duration(30) * time.Second)
 	}
 }
 

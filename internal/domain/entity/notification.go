@@ -5,10 +5,10 @@ import "time"
 // Notification represents a notification in the domain
 type Notification struct {
 	Timestamp     time.Time `json:"timestamp"`
-	UserID        string    `json:"user_id"`
-	UserName      string    `json:"user_name"`
-	DocumentID    string    `json:"document_id"`
-	DocumentTitle string    `json:"document_title"`
+	UserID        string    `json:"userId"`
+	UserName      string    `json:"userName"`
+	DocumentID    string    `json:"documentId"`
+	DocumentTitle string    `json:"documentTitle"`
 	Type          string    `json:"type"`
 }
 
