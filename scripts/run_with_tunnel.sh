@@ -149,7 +149,7 @@ start_tunnel_and_print_url() {
     echo -e "${RED}Could not detect the tunnel URL. Check the log: $LOG_FILE${NC}"
   else
     local WSS_URL
-    WSS_URL="${URL/https:/wss:}/notifications"
+    WSS_URL="${URL/https:/wss:}"
     echo
     echo -e "${GREEN}==============================================================${NC}"
     echo -e "${GREEN}    PUBLIC URL (HTTPS): ${BLUE}$URL${NC}"

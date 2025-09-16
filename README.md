@@ -10,7 +10,7 @@ Each notification is represented as a JSON document.
 
 Example notifications:
 
-    {"Timestamp":"2020-08-12T07:30:08.28093+02:00","UserID":"3ffe27e5-fe2c-45ea-8b3c-879b757b0455","UserName":"Alicia Wolf","DocumentID":"f09acc46-3875-4eff-8831-10ccf3356420","DocumentTitle":"Edmund Fitzgerald Porter"}
+    {"timestamp":"2020-08-12T07:30:08.28093+02:00","userId":"3ffe27e5-fe2c-45ea-8b3c-879b757b0455","userName":"Alicia Wolf","documentId":"f09acc46-3875-4eff-8831-10ccf3356420","documentTitle":"Edmund Fitzgerald Porter","type":"document_created"}
     ...
  
 
@@ -25,29 +25,35 @@ Example response
 ```json    
     [
         {
-            "Attachments": [
+            "id": "69517c79-a4b2-4f64-9c83-20e5678e4519",
+            "title": "Arrogant Bastard Ale",
+            "version": "5.3.15",
+            "attachments": [
                 "European Amber Lager",
                 "Wood-aged Beer"
             ],
-            "Contributors": [
+            "contributors": [
                 {
-                    "ID": "1b41861e-51e2-4bf4-ba13-b20f01ce81ef",
-                    "Name": "Jasen Crona"
+                    "id": "1b41861e-51e2-4bf4-ba13-b20f01ce81ef",
+                    "name": "Jasen Crona",
+                    "createdAt": "2020-08-12T07:30:08.28093+02:00",
+                    "updatedAt": "2020-08-12T07:30:08.28093+02:00"
                 },
                 {
-                    "ID": "2a1d6ed0-7d2d-4dc6-b3ea-436a38fd409e",
-                    "Name": "Candace Jaskolski"
+                    "id": "2a1d6ed0-7d2d-4dc6-b3ea-436a38fd409e",
+                    "name": "Candace Jaskolski",
+                    "createdAt": "2020-08-12T07:30:08.28093+02:00",
+                    "updatedAt": "2020-08-12T07:30:08.28093+02:00"
                 },
                 {
-                    "ID": "9ae28565-4a1c-42e3-9ae8-e39e6f783e14",
-                    "Name": "Rosemarie Schaden"
+                    "id": "9ae28565-4a1c-42e3-9ae8-e39e6f783e14",
+                    "name": "Rosemarie Schaden",
+                    "createdAt": "2020-08-12T07:30:08.28093+02:00",
+                    "updatedAt": "2020-08-12T07:30:08.28093+02:00"
                 }
             ],
-            "CreatedAt": "1912-03-08T06:01:39.382278739Z",
-            "ID": "69517c79-a4b2-4f64-9c83-20e5678e4519",
-            "Title": "Arrogant Bastard Ale",
-            "UpdatedAt": "1952-02-29T22:21:13.817038244Z",
-            "Version": "5.3.15"
+            "createdAt": "1912-03-08T06:01:39.382278739Z",
+            "updatedAt": "1952-02-29T22:21:13.817038244Z"
         },
         ...
     ]

@@ -83,7 +83,7 @@ func (h *NotificationHandler) fallbackFakeNotifications(conn *websocket.Conn) {
 			break
 		}
 
-		time.Sleep(time.Duration(30) * time.Second)
+		time.Sleep(time.Duration(60) * time.Second)
 	}
 }
 
